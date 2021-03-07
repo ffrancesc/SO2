@@ -1,0 +1,8 @@
+/zeos/*.o
+/zeos/*.out
+/zeos/*out*
+/zeos/*.bin
+/zeos/bootsect
+/zeos/build
+/zeos/system
+/zeos/user

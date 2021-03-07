@@ -24,8 +24,8 @@ LDFLAGS = -g -melf_i386
 
 SYSOBJ = \
 	interrupt.o \
-	entry.o \
-	sys_call_table.o \
+	entry_out.o \
+	sys_call_table_out.o \
 	io.o \
 	sched.o \
 	sys.o \
@@ -55,16 +55,16 @@ build: build.c
 bootsect: bootsect.o
 	$(LD86) -s -o $@ $<
 
-bootsect.o: bootsect.s
+bootsect.o: bootsect_out.s
 	$(AS86) -o $@ $<
 
-bootsect.s: bootsect.S
+bootsect_out.s: bootsect.S
 	$(CPP) $(ASMFLAGS) -traditional $< -o $@
 
-entry.s: entry.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
+entry_out.s: entry.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
-sys_call_table.s: sys_call_table.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
+sys_call_table_out.s: sys_call_table.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
 user.o:user.c $(INCLUDEDIR)/libc.h
