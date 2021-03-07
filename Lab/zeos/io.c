@@ -27,21 +27,31 @@ Byte inb (unsigned short port)
 void printc(char c)
 {
      __asm__ __volatile__ ( "movb %0, %%al; outb $0xe9" ::"a"(c)); /* Magic BOCHS debug: writes 'c' to port 0xe9 */
-  if (c=='\n')
+  Word *screen = (Word *)0xb8000;
+  if (c == '\n')
   {
     x = 0;
-    y=(y+1)%NUM_ROWS;
+    y++;
   }
   else
   {
     Word ch = (Word) (c & 0x00FF) | 0x0200;
-	Word *screen = (Word *)0xb8000;
-	screen[(y * NUM_COLUMNS + x)] = ch;
+    screen[(y * NUM_COLUMNS + x)] = ch;
     if (++x >= NUM_COLUMNS)
     {
       x = 0;
-      y=(y+1)%NUM_ROWS;
+      y++;
     }
+  }
+
+  // Handle scroll
+  if (y >= NUM_ROWS)
+  {
+    y = NUM_ROWS - 1;
+    int i, j;
+    for (i = 0; i < NUM_COLUMNS; ++i)
+      for (j = 0; j < NUM_ROWS - 1; ++j)
+        screen[j * NUM_COLUMNS + i] = screen[(j+1) * NUM_COLUMNS + i];
   }
 }
 
