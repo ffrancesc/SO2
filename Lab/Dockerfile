@@ -46,9 +46,4 @@ RUN ln -sf /opt/bochs/bin/bochs /usr/local/bin/bochs_nogdb && \
 # Clean environment
 RUN rm -rf /bochs-tmp
 
-
-COPY "./init.sh" "./zeos.tar" /home/
-RUN chmod 755 .
-
-RUN chmod +x /home/init.sh
-CMD ["/home/init.sh"]
+WORKDIR /workspaces/SO2/Lab
