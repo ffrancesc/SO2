@@ -1,6 +1,6 @@
 #include <asm.h>
 
-ENTRY(addASM)
+ENTRY(addAsm)
 	push	%ebp
 	mov 	%esp,%ebp
 	mov	0xc(%ebp),%eax
