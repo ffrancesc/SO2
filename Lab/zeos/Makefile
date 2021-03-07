@@ -18,7 +18,7 @@ OBJCOPY = objcopy -O binary -R .note -R .comment -S
 INCLUDEDIR = include
 
 
-CFLAGS = -m32 -O2  -g -fno-omit-frame-pointer -ffreestanding -Wall -I$(INCLUDEDIR) -fno-PIC
+CFLAGS = -m32 -O2 -g -fno-omit-frame-pointer -ffreestanding -Wall -I$(INCLUDEDIR) -fno-PIC
 ASMFLAGS = -I$(INCLUDEDIR)
 LDFLAGS = -g -melf_i386
 
@@ -95,7 +95,7 @@ user: user.o user.lds $(USROBJ)
 
 
 clean:
-	rm -f *.o *.s bochsout.txt parport.out system.out system bootsect zeos.bin user user.out *~ build 
+	rm -f *.o *.s *out.s bochsout.txt parport.out system.out system bootsect zeos.bin user user.out *~ build 
 
 disk: zeos.bin
 	dd if=zeos.bin of=/dev/fd0
