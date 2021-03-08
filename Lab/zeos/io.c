@@ -14,6 +14,7 @@
 #define NUM_ROWS    25
 
 Byte x, y=19;
+int st_foreground = 0x2, st_background = 0x0, st_blink = 0;
 
 /* Read a byte from 'port' */
 Byte inb (unsigned short port)
@@ -45,8 +46,7 @@ void printc(char c)
           screen[j * NUM_COLUMNS + i] = screen[(j+1) * NUM_COLUMNS + i];
     }
 
-    Byte color = (c_background << 4 | c_foreground) & 0xFF;  
-    Word ch = (Word) ((c & 0x00FF) | (color << 8));
+    Word ch = (Word) ((st_blink << 15) | (st_background << 12) | (st_foreground << 8) | (c & 0xFF));
     screen[(y * NUM_COLUMNS + x)] = ch;
     if (++x >= NUM_COLUMNS)
     {
@@ -74,4 +74,11 @@ void printk(char *string)
   int i;
   for (i = 0; string[i]; i++)
     printc(string[i]);
+}
+
+void set_style(int foreground, int background, int blink)
+{
+  st_foreground = foreground & 0xF;
+  st_background = background & 0x7;
+  st_blink = blink != 0;
 }
