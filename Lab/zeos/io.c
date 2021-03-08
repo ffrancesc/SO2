@@ -35,7 +35,18 @@ void printc(char c)
   }
   else
   {
-    Word ch = (Word) (c & 0x00FF) | 0x0200;
+    // Handle scroll
+    if (y >= NUM_ROWS)
+    {
+      y = NUM_ROWS - 1;
+      int i, j;
+      for (i = 0; i < NUM_COLUMNS; ++i)
+        for (j = 0; j < NUM_ROWS - 1; ++j)
+          screen[j * NUM_COLUMNS + i] = screen[(j+1) * NUM_COLUMNS + i];
+    }
+
+    Byte color = (c_background << 4 | c_foreground) & 0xFF;  
+    Word ch = (Word) ((c & 0x00FF) | (color << 8));
     screen[(y * NUM_COLUMNS + x)] = ch;
     if (++x >= NUM_COLUMNS)
     {
@@ -44,15 +55,6 @@ void printc(char c)
     }
   }
 
-  // Handle scroll
-  if (y >= NUM_ROWS)
-  {
-    y = NUM_ROWS - 1;
-    int i, j;
-    for (i = 0; i < NUM_COLUMNS; ++i)
-      for (j = 0; j < NUM_ROWS - 1; ++j)
-        screen[j * NUM_COLUMNS + i] = screen[(j+1) * NUM_COLUMNS + i];
-  }
 }
 
 void printc_xy(Byte mx, Byte my, char c)
