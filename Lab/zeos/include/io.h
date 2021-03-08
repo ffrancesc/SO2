@@ -14,5 +14,6 @@ Byte inb (unsigned short port);
 void printc(char c);
 void printc_xy(Byte x, Byte y, char c);
 void printk(char *string);
+void set_style(int foreground, int background, int blink);
 
 #endif  /* __IO_H__ */

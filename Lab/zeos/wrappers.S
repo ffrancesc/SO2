@@ -16,8 +16,24 @@ ENTRY(write)
 	leal errno, %ebx     // Load error to variable errno
 	movl %eax, (%ebx)
 	movl $-1, %eax
-
 end:                    // No errors
+	pop %ebx
+	pop %ebp
+	ret
+
+ENTRY(gettime)
+	push %ebp
+	movl %esp, %ebp
+	push %ebx
+	movl $10, %eax
+	int $0x80
+	cmpl $0, %eax
+	jg return
+	negl %eax
+	leal errno, %ebx   
+	movl %eax, (%ebx)
+	movl $-1, %eax
+return:
 	pop %ebx
 	pop %ebp
 	ret

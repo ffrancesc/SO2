@@ -64,6 +64,24 @@
 	popl %fs; \
 	popl %gs
 
+#define EOI \
+	  movb $0x20, %al; \
+	  outb %al, $0x20;
+
+ENTRY(keyboard_handler)
+	SAVE_ALL
+	EOI
+	call keyboard_routine
+	RESTORE_ALL
+	iret
+
+ENTRY(clock_handler)
+	SAVE_ALL
+	call clock_routine
+	RESTORE_ALL
+	EOI
+	iret
+
 ENTRY(system_call_handler)
 	SAVE_ALL;                        // Save the current context
 	cmpl $0, %eax;                   // Is syscall number negative?
@@ -75,6 +93,6 @@ ENTRY(system_call_handler)
 error:
 	movl $-38, %eax;                 // Move to EAX the ENOSYS error
 fin:	
-      movl %eax, 18(%esp);             // Change the EAX value in the stack
+    movl %eax, 0x18(%esp);             // Change the EAX value in the stack
 	RESTORE_ALL;                     // Restore the context
 	iret;

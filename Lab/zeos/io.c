@@ -79,6 +79,6 @@ void printk(char *string)
 void set_style(int foreground, int background, int blink)
 {
   st_foreground = foreground & 0xF;
-  st_background = background & 0x7;
+  st_background = background & 0x8;
   st_blink = blink != 0;
 }

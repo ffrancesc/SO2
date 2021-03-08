@@ -100,6 +100,7 @@ int __attribute__((__section__(".text.main")))
 
   printk("Entering user mode...\n\n");
   set_style(10, 4, 1);
+  zeos_ticks = 0;
 
   enable_int();
   /*

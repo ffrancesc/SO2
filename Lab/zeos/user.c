@@ -5,6 +5,7 @@
 char buff[24];
 
 int pid,l;
+int gettime(void);
 
 int add(int par1, int par2) {
   return par1 + par2;
@@ -12,7 +13,7 @@ int add(int par1, int par2) {
 
 int addAsm(int, int);
 
-const static char* greet = "User here saying hello!!";
+static char* greet = "User here saying hello!!";
 
 int __attribute__ ((__section__(".text.main")))
   main(void)
@@ -23,6 +24,7 @@ int __attribute__ ((__section__(".text.main")))
   //~ int result = add(0x42, 0x666);
   //~ int res = addAsm(32, 32);
 
+  int t = gettime();
   write(1, greet, strlen(greet));
 
   while(1) {}

@@ -3,6 +3,7 @@
  */
 #include <types.h>
 #include <interrupt.h>
+#include <libc.h>
 #include <segment.h>
 #include <hardware.h>
 #include <io.h>
@@ -15,11 +16,11 @@ Register    idtR;
 char char_map[] =
 {
   '\0','\0','1','2','3','4','5','6',
-  '7','8','9','0','\'','�','\0','\0',
+  '7','8','9','0','\'','¡','\0','\0',
   'q','w','e','r','t','y','u','i',
   'o','p','`','+','\0','\0','a','s',
-  'd','f','g','h','j','k','l','�',
-  '\0','�','\0','�','z','x','c','v',
+  'd','f','g','h','j','k','l','ñ',
+  '\0','º','\0','ç','z','x','c','v',
   'b','n','m',',','.','-','\0','*',
   '\0','\0','\0','\0','\0','\0','\0','\0',
   '\0','\0','\0','\0','\0','\0','\0','7',
@@ -29,7 +30,9 @@ char char_map[] =
   '\0','\0'
 };
 
-void system_call_handler();
+void system_call_handler(void);
+void keyboard_handler(void);
+void clock_handler(void);
 
 void setInterruptHandler(int vector, void (*handler)(), int maxAccessibleFromPL)
 {
@@ -86,7 +89,40 @@ void setIdt()
 
   /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
   setTrapHandler(0x80, system_call_handler, 3);
+  setInterruptHandler(33, keyboard_handler, 0);
+  setInterruptHandler(32, clock_handler, 0);
 
   set_idt_reg(&idtR);
 }
 
+//Convierte un char que representa un numero binario a decimal
+int bin2int(unsigned char c) {
+	int dec = 0;
+	int s = 1;
+	char caux;
+	for (int i = 0; i < 8; i++) {
+		caux = (c >> i) & 0x1;
+		if (caux == 0x1) dec = dec + s;
+		s = s*2;
+	}
+	return dec;
+}
+
+void keyboard_routine()
+{
+	unsigned char c = inb(0x60);
+	unsigned char bit7 = c >> 7; 		//extraemos el bit 7
+	unsigned char code = c & 0x007f; 	//extraemos los bits 6..0
+	
+	if (bit7 == 0x0)  { //make (tecla pulsada)
+		int pos = bin2int(code);
+		char character = char_map[pos];
+		if (character != '\0') printc_xy(0,20,character);
+		else printc_xy(0,20,'C');
+	}
+}
+
+void clock_routine() {
+	zeos_show_clock();
+	++zeos_ticks;
+}

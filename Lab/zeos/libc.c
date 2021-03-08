@@ -8,11 +8,11 @@
 
 #include <errno.h>
 
-static const char* EBADF_str = "Bad file descriptor";
-static const char* EACCES_str = "Permission denied";
-static const char* ENOSYS_str= "Function not implemented";
-static const char* EFAULT_str = "Bad address";
-static const char* EINVAL_str = "Invalid argument";
+static char* EBADF_str = "Bad file descriptor";
+static char* EACCES_str = "Permission denied";
+static char* ENOSYS_str= "Function not implemented";
+static char* EFAULT_str = "Bad address";
+static char* EINVAL_str = "Invalid argument";
 
 int errno;
 
@@ -51,18 +51,17 @@ int strlen(char *a)
   return i;
 }
 
-static const char* default_str = "Hey! If you want to know the error, implement missing error codes from errno.h (and its corresponding messages) to libgc.c's perror function";
+static char* default_str = "Hey! If you want to know the error, implement missing error codes from errno.h (and its corresponding messages) to libc.c's perror function";
 void perror(void){
-  char* err_message;
+	char* err_message;
 	switch (errno) {
 		case EBADF:  err_message = EBADF_str; break;
-    case EACCES: err_message = EBADF_str; break;
-    case ENOSYS: err_message = EBADF_str; break;
-    case EFAULT: err_message = EBADF_str; break;
-    case EINVAL: err_message = EBADF_str; break;
-    default: err_message = default_str; break;
+		case EACCES: err_message = EACCES_str; break;
+		case ENOSYS: err_message = ENOSYS_str; break;
+		case EFAULT: err_message = EFAULT_str; break;
+		case EINVAL: err_message = EINVAL_str; break;
+		default: err_message = default_str; break;
 	}
-
-  write(1, err_message, strlen(err_message));
-
+	
+	write(1, err_message, strlen(err_message));
 }
