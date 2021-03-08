@@ -13,19 +13,21 @@
 
 #include <sched.h>
 
+#include <errno.h>
+
 #define LECTURA 0
 #define ESCRIPTURA 1
 
 int check_fd(int fd, int permissions)
 {
-  if (fd!=1) return -9; /*EBADF*/
-  if (permissions!=ESCRIPTURA) return -13; /*EACCES*/
+  if (fd!=1) return -EBADF;
+  if (permissions!=ESCRIPTURA) return -EACCES;
   return 0;
 }
 
 int sys_ni_syscall()
 {
-	return -38; /*ENOSYS*/
+	return -ENOSYS;
 }
 
 int sys_getpid()
@@ -45,3 +47,19 @@ int sys_fork()
 void sys_exit()
 {  
 }
+
+#define CHUNK_SIZE 1
+int sys_write(int fd, char* buffer, int size){
+    int res = check_fd(fd, ESCRIPTURA);
+    if (res < 0) return res;
+    if (buffer == NULL) return -EFAULT;
+    if (size < 0) return -EINVAL;
+    char dest[1];
+    int i = 0;
+    for (i = 0; i < size; ++i){
+        copy_from_user(buffer + i, dest, 1);
+        sys_write_console(dest, 1);
+    }
+    return i;
+}
+

@@ -51,3 +51,30 @@
       movl %edx, %ds;           \
       movl %edx, %es
 
+#define RESTORE_ALL \
+	popl %ebx;\
+	popl %ecx;\
+	popl %edx;\
+	popl %esi;\
+	popl %edi;\
+	popl %ebp;\
+	popl %eax;\
+	popl %ds; \
+	popl %es; \
+	popl %fs; \
+	popl %gs
+
+ENTRY(system_call_handler)
+	SAVE_ALL;                        // Save the current context
+	cmpl $0, %eax;                   // Is syscall number negative?
+	jl error;                        // If it is, jump to return an error
+	cmpl $MAX_SYSCALL, %eax;         // Is syscall greater than MAX_SYSCALL (4)?
+	jg error;                        // If it is, jump to return an error
+	call *sys_call_table(,%eax,4);   // Call the corresponding service routine
+	jmp fin;                         // Finish
+error:
+	movl $-38, %eax;                 // Move to EAX the ENOSYS error
+fin:	
+      movl %eax, 18(%esp);             // Change the EAX value in the stack
+	RESTORE_ALL;                     // Restore the context
+	iret;

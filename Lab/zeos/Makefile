@@ -41,7 +41,7 @@ LIBZEOS = -L . -l zeos
 USROBJ = \
 	libc.o \
 	suma_out.o \
-	# libjp.a \
+	wrappers_out.o \
 
 all:zeos.bin
 
@@ -63,6 +63,9 @@ bootsect_out.s: bootsect.S
 	$(CPP) $(ASMFLAGS) -traditional $< -o $@
 
 entry_out.s: entry.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
+	$(CPP) $(ASMFLAGS) -o $@ $<
+
+wrappers_out.s: wrappers.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
 suma_out.s: suma.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
