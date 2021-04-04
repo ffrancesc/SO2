@@ -25,5 +25,6 @@ int __attribute__ ((__section__(".text.main")))
   //~ int res = addAsm(32, 32);
   write(1, greet, strlen(greet));
 
-  while(1) {}
+  while(1) {
+  }
 }

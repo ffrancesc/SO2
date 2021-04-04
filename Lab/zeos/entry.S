@@ -77,9 +77,9 @@ ENTRY(keyboard_handler)
 
 ENTRY(clock_handler)
 	SAVE_ALL
+	EOI
 	call clock_routine
 	RESTORE_ALL
-	EOI
 	iret
 
 
@@ -99,3 +99,31 @@ fin:
 	iret;
 
 
+ENTRY(task_switch)
+    pushl %ebp
+    movl %esp, %ebp
+    pushl %esi
+    pushl %edi
+    pushl %ebx
+    pushl 8(%ebp)
+    call inner_task_switch
+    popl %ebx   // quitamos el parametro
+    popl %ebx
+    popl %edi
+    popl %esi
+    popl %ebp
+    ret
+
+
+ENTRY(asm_inner_task_switch)
+    pushl %ebp
+    movl %esp, %ebp
+    // current()->kernel_esp = %ebp
+    movl %esp , %ebx
+    and $0xfffff000, %ebx
+    movl %ebp, 4(%ebx)
+    // %esp = t->task.kernel_esp;
+    movl 8(%ebp), %ebx
+    movl 4(%ebx), %esp
+    popl %ebp
+    ret
