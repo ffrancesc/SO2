@@ -37,3 +37,20 @@ return:
 	pop %ebx
 	pop %ebp
 	ret
+
+ENTRY(getpid)
+    push %ebp
+    movl %esp, %ebp
+    push %ebx
+	movl $20, %eax
+	int $0x80
+	cmpl $0, %eax
+	jg returnpid
+	negl %eax
+	leal errno, %ebx
+	movl %eax, (%ebx)
+	movl $-1, %eax
+returnpid:
+	pop %ebx
+	pop %ebp
+	ret

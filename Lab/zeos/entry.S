@@ -82,6 +82,7 @@ ENTRY(clock_handler)
 	EOI
 	iret
 
+
 ENTRY(system_call_handler)
 	SAVE_ALL;                        // Save the current context
 	cmpl $0, %eax;                   // Is syscall number negative?
@@ -96,3 +97,5 @@ fin:
     movl %eax, 0x18(%esp);             // Change the EAX value in the stack
 	RESTORE_ALL;                     // Restore the context
 	iret;
+
+

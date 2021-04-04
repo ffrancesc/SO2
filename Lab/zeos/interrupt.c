@@ -125,4 +125,5 @@ void keyboard_routine()
 void clock_routine() {
 	zeos_show_clock();
 	++zeos_ticks;
+	if (zeos_ticks%1000 == 0) task_switch((union task_union *)idle_task);
 }
