@@ -7,6 +7,7 @@
 #include <segment.h>
 #include <hardware.h>
 #include <io.h>
+#include <libc.h>
 
 #include <zeos_interrupt.h>
 
@@ -120,11 +121,10 @@ void keyboard_routine()
 		if (character != '\0') printc_xy(0,20,character);
 		else printc_xy(0,20,'C');
 	}
-	task_switch((union task_union *)idle_task);
 }
 
 void clock_routine() {
 	zeos_show_clock();
 	++zeos_ticks;
-//	if (zeos_ticks%100 == 0) task_switch((union task_union *)idle_task);
+	schedule();
 }

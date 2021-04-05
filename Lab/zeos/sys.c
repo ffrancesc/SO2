@@ -48,7 +48,13 @@ int sys_fork()
 }
 
 void sys_exit()
-{  
+{
+    free_user_pages(current());
+    if (list_empty(&readyqueue) == 1) {
+        currentQuantum = get_quantum(idle_task);
+        task_switch((union task_union *)idle_task);
+    }
+    else sched_next_rr();
 }
 
 #define CHUNK_SIZE 1

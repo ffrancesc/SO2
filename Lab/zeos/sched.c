@@ -66,6 +66,7 @@ void init_idle (void)
     tu->stack[1022] = 0;
     ts->kernel_esp = (int)&(tu->stack[1022]);
     idle_task = ts;
+    set_quantum(ts,1000);
 }
 
 void init_task1(void)
@@ -80,6 +81,8 @@ void init_task1(void)
     set_user_pages(ts);
     tss.esp0 = (int)&(tu->stack[1023]);
     set_cr3(ts->dir_pages_baseAddr);
+    set_quantum(ts,1000);
+    currentQuantum = 1000;
 }
 
 void init_sched()
@@ -102,4 +105,54 @@ void inner_task_switch(union task_union*t)
     tss.esp0 = (int)&(t->stack[1023]);
     set_cr3(t->task.dir_pages_baseAddr);
     asm_inner_task_switch(t);
+}
+
+void update_sched_data_rr()
+{
+    --currentQuantum;
+}
+
+int needs_sched_rr()
+{
+    if (currentQuantum == 0 && list_empty(&readyqueue) == 0) return 1;
+    return 0;
+}
+
+void update_process_state_rr(struct task_struct *t, struct list_head *dest)
+{
+    list_add(&(t->list), dest);
+}
+
+void sched_next_rr()
+{
+    struct list_head *e = list_first(&readyqueue);
+    struct task_struct *ts = list_head_to_task_struct(e);
+    list_del(e);
+    union task_union *tu = (union task_union *) ts;
+    currentQuantum = get_quantum(ts);
+    task_switch(tu);
+}
+
+void schedule()
+{
+    update_sched_data_rr();
+    if (needs_sched_rr() == 1) {
+        if (current()->PID != 0) update_process_state_rr(current(), &readyqueue);
+        sched_next_rr();
+    }
+    else if (currentQuantum == 0 && current()->PID != 0) { // context switch to idle process
+        update_process_state_rr(current(), &freequeue);
+        currentQuantum = get_quantum(idle_task);
+        task_switch((union task_union *)idle_task);
+    }
+}
+
+int get_quantum(struct task_struct *t)
+{
+    return t->quantum;
+}
+
+void set_quantum(struct task_struct *t, int new_quantum)
+{
+    t->quantum = new_quantum;
 }

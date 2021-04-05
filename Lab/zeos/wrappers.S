@@ -54,3 +54,19 @@ returnpid:
 	pop %ebx
 	pop %ebp
 	ret
+
+ENTRY(exit)
+    push %ebp
+    movl %esp, %ebp
+    push %ebx
+	movl $1, %eax
+	int $0x80
+	cmpl $0, %eax
+	jg returnexit
+	leal errno, %ebx
+	movl %eax, (%ebx)
+	movl $-1, %eax
+returnexit:
+	pop %ebx
+	pop %ebp
+	ret

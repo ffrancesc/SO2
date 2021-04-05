@@ -19,6 +19,7 @@ struct task_struct {
   int kernel_esp;
   page_table_entry * dir_pages_baseAddr;
   struct list_head list;
+  int quantum;
 };
 
 union task_union {
@@ -32,6 +33,8 @@ struct list_head freequeue;
 struct list_head readyqueue;
 
 struct task_struct *idle_task;
+
+int currentQuantum;
 
 #define KERNEL_ESP(t)       	(DWord) &(t)->stack[KERNEL_STACK_SIZE]
 
@@ -62,5 +65,8 @@ void sched_next_rr();
 void update_process_state_rr(struct task_struct *t, struct list_head *dest);
 int needs_sched_rr();
 void update_sched_data_rr();
+void schedule();
+int get_quantum(struct task_struct *t);
+void set_quantum(struct task_struct *t, int new_quantum);
 
 #endif  /* __SCHED_H__ */
