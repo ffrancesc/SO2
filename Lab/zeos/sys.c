@@ -21,10 +21,11 @@
 #define ESCRIPTURA 1
 
 // Number of consecutive bytes copied on write call.
-#define SYS_WRITE_CHUNK 1024
+#define SYS_WRITE_CHUNK 64
+
+void * get_ebp();
 
 extern int zeos_ticks;
-int ret_from_fork(void);
 int next_pid = 10;
 
 int check_fd(int fd, int permissions)
@@ -42,6 +43,10 @@ int sys_ni_syscall()
 int sys_getpid()
 {
 	return current()->PID;
+}
+
+int ret_from_fork() {
+    return 0;
 }
 
 int sys_fork()
@@ -104,15 +109,12 @@ int sys_fork()
     PID = next_pid++;
     ts_child->PID = PID;
 
-    // g) 
-    set_quantum(ts_child, 1000);
-
-    // h)
-    tu_child->stack[1023] = ret_from_fork;
-    tu_child->stack[1022] = 0;
-
-    // i)
-    list_add_tail(&ts_child->list, &readyqueue);
+    // g, h) 
+    ts_child->quantum = 1000;
+    tu_child->stack[KERNEL_STACK_SIZE-18] = &ret_from_fork;
+    tu_child->stack[KERNEL_STACK_SIZE-19] = 0;
+    ts_child->kernel_esp = &tu_child->stack[KERNEL_STACK_SIZE-19];
+    list_add_tail(&(ts_child->list), &readyqueue);
 
     // j)
     return PID;
