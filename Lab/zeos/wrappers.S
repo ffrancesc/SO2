@@ -11,12 +11,12 @@ ENTRY(write)
 	movl $4, %eax        // Identifier for the system call (4 for write)
 	int $0x80            // Generate the trap
 	cmpl $0, %eax        // Check for errors
-	jge end              
+	jge returnwrite              
 	negl %eax
 	leal errno, %ebx     // Load error to variable errno
 	movl %eax, (%ebx)
 	movl $-1, %eax
-end:                    // No errors
+returnwrite:             // No errors
 	pop %ebx
 	pop %ebp
 	ret
@@ -28,12 +28,12 @@ ENTRY(gettime)
 	movl $10, %eax
 	int $0x80
 	cmpl $0, %eax
-	jg return
+	jg returngettime
 	negl %eax
 	leal errno, %ebx   
 	movl %eax, (%ebx)
 	movl $-1, %eax
-return:
+returngettime:
 	pop %ebx
 	pop %ebp
 	ret
@@ -51,6 +51,23 @@ ENTRY(getpid)
 	movl %eax, (%ebx)
 	movl $-1, %eax
 returnpid:
+	pop %ebx
+	pop %ebp
+	ret
+
+ENTRY(fork)
+	push %ebp
+	movl %esp, %ebp
+	push %ebx
+	movl $2, %eax
+	int $0x80
+	cmpl $0, %eax
+	jg returnfork
+	negl %eax
+	leal errno, %ebx   
+	movl %eax, (%ebx)
+	movl $-1, %eax
+returnfork:
 	pop %ebx
 	pop %ebp
 	ret
