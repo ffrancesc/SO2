@@ -6,8 +6,6 @@
 #include <mm.h>
 #include <io.h>
 
-void asm_inner_task_switch(union task_union * t);
-
 union task_union task[NR_TASKS]
   __attribute__((__section__(".data.task")));
 
@@ -17,7 +15,7 @@ struct task_struct *list_head_to_task_struct(struct list_head *l)
 }
 
 extern struct list_head blocked;
-
+int currentQuantum = 0;
 
 /* get_DIR - Returns the Page Directory address for task 't' */
 page_table_entry * get_DIR (struct task_struct *t) 
@@ -62,11 +60,11 @@ void init_idle (void)
     list_del(e);
     ts->PID = 0;
     allocate_DIR(ts);
-    tu->stack[1023] = (int)cpu_idle;
-    tu->stack[1022] = 0;
-    ts->kernel_esp = (int)&(tu->stack[1022]);
+    tu->stack[KERNEL_STACK_SIZE-1] = (unsigned long)&cpu_idle;
+    tu->stack[KERNEL_STACK_SIZE-2] = 0;
+    ts->kernel_esp = (int)&(tu->stack[KERNEL_STACK_SIZE-2]);
     idle_task = ts;
-    set_quantum(ts,1000);
+    set_quantum(ts,QUANTUM);
 }
 
 void init_task1(void)
@@ -74,19 +72,28 @@ void init_task1(void)
     struct list_head *e = list_first(&freequeue);
     struct task_struct *ts = list_head_to_task_struct(e);
     union task_union *tu = (union task_union *) ts;
-
     list_del(e);
     ts->PID = 1;
     allocate_DIR(ts);
     set_user_pages(ts);
-    tss.esp0 = (int)&(tu->stack[1023]);
+    tss.esp0 = (DWord)&(tu->stack[KERNEL_STACK_SIZE]);
     set_cr3(ts->dir_pages_baseAddr);
-    set_quantum(ts,1000);
-    currentQuantum = 1000;
+    set_quantum(ts,QUANTUM);
+    currentQuantum = QUANTUM;
+    ts->state = ST_RUN;
 }
 
 void init_sched()
 {
+  // freequeue initialization
+  INIT_LIST_HEAD(&freequeue);
+  for (int i = 0; i < NR_TASKS; i++) {
+    task[i].task.PID = -1;
+    list_add_tail(&(task[i].task.list), &freequeue);
+  }
+
+  // readyqueue initialization
+  INIT_LIST_HEAD(&readyqueue);
 }
 
 struct task_struct* current()
@@ -102,48 +109,54 @@ struct task_struct* current()
 
 void inner_task_switch(union task_union*t)
 {
-    tss.esp0 = (int)&(t->stack[1023]);
+    tss.esp0 = (int)&(t->stack[KERNEL_STACK_SIZE]);
     set_cr3(t->task.dir_pages_baseAddr);
-    asm_inner_task_switch(t);
+    asm_inner_task_switch(&(current()->kernel_esp), t->task.kernel_esp);
 }
 
 void update_sched_data_rr()
 {
-    --currentQuantum;
+    currentQuantum--;
 }
 
 int needs_sched_rr()
 {
-    if (currentQuantum == 0 && list_empty(&readyqueue) == 0) return 1;
+    if ((currentQuantum == 0) && (list_empty(&readyqueue) == 0)) return 1;
+    if (currentQuantum == 0) currentQuantum = get_quantum(current());
     return 0;
 }
 
 void update_process_state_rr(struct task_struct *t, struct list_head *dest)
 {
-    list_add(&(t->list), dest);
+    if (t->state != ST_RUN) list_del(&(t->list));
+    if (dest == NULL) t->state = ST_RUN;
+    else {
+        list_add_tail(&(t->list), dest);
+        t->state = ST_READY;
+    }
 }
 
 void sched_next_rr()
 {
-    struct list_head *e = list_first(&readyqueue);
-    struct task_struct *ts = list_head_to_task_struct(e);
-    list_del(e);
-    union task_union *tu = (union task_union *) ts;
+    struct list_head *e;
+    struct task_struct *ts;
+    if (list_empty(&readyqueue) == 1) ts = idle_task;
+    else {
+        e = list_first(&readyqueue);
+        ts = list_head_to_task_struct(e);
+        list_del(e);
+    }
+    ts->state = ST_RUN;
     currentQuantum = get_quantum(ts);
-    task_switch(tu);
+    task_switch((union task_union *)ts);
 }
 
 void schedule()
 {
     update_sched_data_rr();
     if (needs_sched_rr() == 1) {
-        if (current()->PID != 0) update_process_state_rr(current(), &readyqueue);
+        update_process_state_rr(current(), &readyqueue);
         sched_next_rr();
-    }
-    else if (currentQuantum == 0 && current()->PID != 0) { // context switch to idle process
-        update_process_state_rr(current(), &freequeue);
-        currentQuantum = get_quantum(idle_task);
-        task_switch((union task_union *)idle_task);
     }
 }
 

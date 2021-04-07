@@ -89,14 +89,6 @@ int __attribute__((__section__(".text.main")))
   /* Initialize Scheduling */
   init_sched();
 
-  // freequeue initialization
-  INIT_LIST_HEAD(&freequeue);
-  for (int i = 0; i < NR_TASKS; ++i)
-    list_add(&(task[i].task.list), &freequeue);
-
-  // readyqueue initialization
-  INIT_LIST_HEAD(&readyqueue);
-
   /* Initialize idle task  data */
   init_idle();
   /* Initialize task 1 data */

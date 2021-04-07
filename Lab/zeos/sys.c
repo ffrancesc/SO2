@@ -49,12 +49,14 @@ int sys_fork()
 
 void sys_exit()
 {
-    free_user_pages(current());
-    if (list_empty(&readyqueue) == 1) {
-        currentQuantum = get_quantum(idle_task);
-        task_switch((union task_union *)idle_task);
+    current()->PID=-1;
+    page_table_entry *pt = get_PT(current());
+    for (int i=0; i<NUM_PAG_DATA; i++) {
+        free_frame(get_frame(pt, PAG_LOG_INIT_DATA+i));
+        del_ss_pag(pt, PAG_LOG_INIT_DATA+i);
     }
-    else sched_next_rr();
+    list_add_tail(&(current()->list), &freequeue);
+    sched_next_rr();
 }
 
 #define CHUNK_SIZE 1

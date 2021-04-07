@@ -22,51 +22,25 @@ end:                    // No errors
 	ret
 
 ENTRY(gettime)
-	push %ebp
+	pushl %ebp
 	movl %esp, %ebp
-	push %ebx
 	movl $10, %eax
 	int $0x80
-	cmpl $0, %eax
-	jg return
-	negl %eax
-	leal errno, %ebx   
-	movl %eax, (%ebx)
-	movl $-1, %eax
-return:
-	pop %ebx
-	pop %ebp
+	popl %ebp
 	ret
 
 ENTRY(getpid)
-    push %ebp
-    movl %esp, %ebp
-    push %ebx
+    pushl %ebp
+	movl %esp, %ebp
 	movl $20, %eax
 	int $0x80
-	cmpl $0, %eax
-	jg returnpid
-	negl %eax
-	leal errno, %ebx
-	movl %eax, (%ebx)
-	movl $-1, %eax
-returnpid:
-	pop %ebx
-	pop %ebp
+	popl %ebp
 	ret
 
 ENTRY(exit)
-    push %ebp
-    movl %esp, %ebp
-    push %ebx
+    pushl %ebp
+	movl %esp, %ebp
 	movl $1, %eax
 	int $0x80
-	cmpl $0, %eax
-	jg returnexit
-	leal errno, %ebx
-	movl %eax, (%ebx)
-	movl $-1, %eax
-returnexit:
-	pop %ebx
-	pop %ebp
+	popl %ebp
 	ret

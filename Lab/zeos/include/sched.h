@@ -11,6 +11,7 @@
 
 #define NR_TASKS      10
 #define KERNEL_STACK_SIZE	1024
+#define QUANTUM	        1000
 
 enum state_t { ST_RUN, ST_READY, ST_BLOCKED };
 
@@ -20,6 +21,7 @@ struct task_struct {
   page_table_entry * dir_pages_baseAddr;
   struct list_head list;
   int quantum;
+  enum state_t state;
 };
 
 union task_union {
@@ -28,11 +30,10 @@ union task_union {
 };
 
 extern union task_union task[NR_TASKS]; /* Vector de tasques */
+struct task_struct *idle_task;
 
 struct list_head freequeue;
 struct list_head readyqueue;
-
-struct task_struct *idle_task;
 
 int currentQuantum;
 
@@ -51,6 +52,7 @@ struct task_struct * current();
 
 void task_switch(union task_union*t);
 void inner_task_switch(union task_union*t);
+void asm_inner_task_switch(int *oldKernelEsp, int newKernelEsp);
 
 struct task_struct *list_head_to_task_struct(struct list_head *l);
 

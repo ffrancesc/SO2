@@ -107,7 +107,7 @@ ENTRY(task_switch)
     pushl %ebx
     pushl 8(%ebp)
     call inner_task_switch
-    popl %ebx   // quitamos el parametro
+    addl $4, %esp   // quitamos el parametro
     popl %ebx
     popl %edi
     popl %esi
@@ -116,14 +116,10 @@ ENTRY(task_switch)
 
 
 ENTRY(asm_inner_task_switch)
-    pushl %ebp
-    movl %esp, %ebp
     // current()->kernel_esp = %ebp
-    movl %esp , %ebx
-    and $0xfffff000, %ebx
-    movl %ebp, 4(%ebx)
-    // %esp = t->task.kernel_esp;
-    movl 8(%ebp), %ebx
-    movl 4(%ebx), %esp
-    popl %ebp
-    ret
+    mov 4(%esp), %eax
+	mov %ebp, (%eax)
+	// %esp = t->task.kernel_esp;
+	mov 8(%esp), %esp
+	popl %ebp
+	ret
