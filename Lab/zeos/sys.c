@@ -57,21 +57,24 @@ void sys_exit()
     else sched_next_rr();
 }
 
-#define CHUNK_SIZE 1
-int sys_write(int fd, char* buffer, int size){
+#define CHUNK_SIZE 64
+int sys_write(int fd, char* buffer, int size) {
     int res = check_fd(fd, ESCRIPTURA);
     if (res < 0) return res;
     if (buffer == NULL) return -EFAULT;
     if (size < 0) return -EINVAL;
-    char dest[1];
-    int i = 0;
-    for (i = 0; i < size; ++i){
-        copy_from_user(buffer + i, dest, 1);
-        sys_write_console(dest, 1);
+    char dest[CHUNK_SIZE];
+    int written = 0;
+    while (written < size) {
+        int chunk_s = min(size - written, CHUNK_SIZE);
+        copy_from_user(buffer + written, dest, chunk_s);
+        sys_write_console(dest, chunk_s);
+        written += chunk_s;
     }
-    return i;
+    return written;
 }
 
 int sys_gettime() {
-	return zeos_ticks;
+    return zeos_ticks;
 }
+
