@@ -42,28 +42,60 @@ int sys_getpid()
 
 int sys_fork()
 {
-    int PID=-1;
+    int PID = -1;
     
     // a) create the child process
-    if (list_empty(&freequeue)) return -ENOMEM; // No free process left.
+    if (list_empty(&freequeue)) 
+        return -ENOMEM; // No free process left.
     struct list_head *e = list_first(&freequeue); 
     struct task_struct *ts_child = list_head_to_task_struct(e);
     union task_union *tu_child = (union task_union *) ts_child;
     list_del(e);
 
-    // b) copy parent's 
-    struct task_struct *ts_parent = current();
-    union task_union *tu_parent  = (union task_union *) ts_parent;
-    copy_data(ts_parent, ts_child, sizeof(union task_union));
+    // b) copy paren's task_union
+    struct task_struct *ts_paren = current();
+    union task_union *tu_paren  = (union task_union *) ts_paren;
+    copy_data(ts_paren, ts_child, sizeof(union task_union));
 
     // c) initialize dir_pages_baseAddr with a new directory
     allocate_DIR(ts_child);
 
-    // TODO: page shenanigans
-    // d)
-    // e)
+    // d) Search physical pages (frames) for child
+    int frames_child[NUM_PAG_DATA];
+    for (int i = 0; i < NUM_PAG_DATA; ++i) {
+        int frame = alloc_frame();
+        if (frame == -1) {
+            // No available frame. Free the previously allocated frames and return
+            // memory error.
+            for (int j = 0; j < i; ++j) 
+                free_frame(frames_child[j]);
+            return -ENOMEM;
+        } else {
+            // Save frame
+            frames_child[i] = frame;
+        }
+    }
 
+    // e) Memory shenanigans
+    page_table_entry *pt_child = get_PT(new_task);
+    page_table_entry *pt_paren = get_PT(current());
+    // e.i.A) map child's system code and data to its parent's (shared)
+    for (int i = 0; i < NUM_PAG_KERNEL; ++i) 
+        pt_child[i] = pt_parent[i];
+    for (int i = 0; i < NUM_PAG_CODE; ++i)
+        pt_child[PAG_LOG_INIT_CODE + i] = pt_parent[PAG_LOG_INIT_CODE + 1];
+    // e.i.B) point page table entries for the user data+stack to pages allocated on step d)
+    for (int i = 0; i < NUM_PAG_DATA; ++i) 
+        set_ss_pag(pt_child, PAG_LOG_INIT_DATA + i, frames_child[i]);
 
+    // e.ii) Copy the user data+stack pages from the parent process to the child process.
+    for (int i = 0; i < NUM_PAG_DATA; ++i) {
+        set_ss_pag(pt_parent, PAG_LOG_INIT_DATA + NUM_PAG_DATA + i, frames_child[i]);
+        copy_data((PAG_LOG_INIT_DATA + i) << 12, (PAG_LOG_INIT_DATA + NUM_PAG_DATA + i) << 12), PAGE_SIZE);
+        del_ss_pag(pt_parent, PAG_LOG_INIT_DATA + NUM_PAG_DATA + i);
+    }
+    set_cr3(get_DIR(current()));
+    
     // f) assign PID to the process.
     PID = next_pid++;
     ts_child->PID = PID;
