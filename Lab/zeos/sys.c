@@ -16,8 +16,12 @@
 #include <errno.h>
 #include <system.h>
 
+// File permisions
 #define LECTURA 0
 #define ESCRIPTURA 1
+
+// Number of consecutive bytes copied on write call.
+#define SYS_WRITE_CHUNK 1024
 
 extern int zeos_ticks;
 int ret_from_fork(void);
@@ -55,7 +59,7 @@ int sys_fork()
     // b) copy paren's task_union
     struct task_struct *ts_paren = current();
     union task_union *tu_paren  = (union task_union *) ts_paren;
-    copy_data(ts_paren, ts_child, sizeof(union task_union));
+    copy_data(tu_paren, tu_child, sizeof(union task_union));
 
     // c) initialize dir_pages_baseAddr with a new directory
     allocate_DIR(ts_child);
@@ -77,22 +81,22 @@ int sys_fork()
     }
 
     // e) Memory shenanigans
-    page_table_entry *pt_child = get_PT(new_task);
+    page_table_entry *pt_child = get_PT(ts_child);
     page_table_entry *pt_paren = get_PT(current());
     // e.i.A) map child's system code and data to its parent's (shared)
     for (int i = 0; i < NUM_PAG_KERNEL; ++i) 
-        pt_child[i] = pt_parent[i];
+        pt_child[i] = pt_paren[i];
     for (int i = 0; i < NUM_PAG_CODE; ++i)
-        pt_child[PAG_LOG_INIT_CODE + i] = pt_parent[PAG_LOG_INIT_CODE + 1];
+        pt_child[PAG_LOG_INIT_CODE + i] = pt_paren[PAG_LOG_INIT_CODE + 1];
     // e.i.B) point page table entries for the user data+stack to pages allocated on step d)
     for (int i = 0; i < NUM_PAG_DATA; ++i) 
         set_ss_pag(pt_child, PAG_LOG_INIT_DATA + i, frames_child[i]);
 
     // e.ii) Copy the user data+stack pages from the parent process to the child process.
     for (int i = 0; i < NUM_PAG_DATA; ++i) {
-        set_ss_pag(pt_parent, PAG_LOG_INIT_DATA + NUM_PAG_DATA + i, frames_child[i]);
-        copy_data((PAG_LOG_INIT_DATA + i) << 12, (PAG_LOG_INIT_DATA + NUM_PAG_DATA + i) << 12), PAGE_SIZE);
-        del_ss_pag(pt_parent, PAG_LOG_INIT_DATA + NUM_PAG_DATA + i);
+        set_ss_pag(pt_paren, PAG_LOG_INIT_DATA + NUM_PAG_DATA + i, frames_child[i]);
+        copy_data((PAG_LOG_INIT_DATA + i) << 12, (PAG_LOG_INIT_DATA + NUM_PAG_DATA + i) << 12, PAGE_SIZE);
+        del_ss_pag(pt_paren, PAG_LOG_INIT_DATA + NUM_PAG_DATA + i);
     }
     set_cr3(get_DIR(current()));
     
@@ -124,16 +128,15 @@ void sys_exit()
     else sched_next_rr();
 }
 
-#define CHUNK_SIZE 64
 int sys_write(int fd, char* buffer, int size) {
     int res = check_fd(fd, ESCRIPTURA);
     if (res < 0) return res;
     if (buffer == NULL) return -EFAULT;
     if (size < 0) return -EINVAL;
-    char dest[CHUNK_SIZE];
+    char dest[SYS_WRITE_CHUNK];
     int written = 0;
     while (written < size) {
-        int chunk_s = min(size - written, CHUNK_SIZE);
+        int chunk_s = min(size - written, SYS_WRITE_CHUNK);
         copy_from_user(buffer + written, dest, chunk_s);
         sys_write_console(dest, chunk_s);
         written += chunk_s;
