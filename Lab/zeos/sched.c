@@ -13,7 +13,7 @@
 #define SYSTEM2USER 4
 
 void update_stats(struct task_struct *ts, int transition);
-void asm_inner_task_switch(union task_union * t);
+void asm_inner_task_switch(int *oldKernelEsp, int newKernelEsp);
 
 union task_union task[NR_TASKS]
   __attribute__((__section__(".data.task")));
@@ -90,6 +90,7 @@ void init_task1(void)
     set_quantum(ts,QUANTUM);
     currentQuantum = QUANTUM;
     ts->state = ST_RUN;
+    setMSR(0x175, 0, (unsigned long)&(tu->stack[KERNEL_STACK_SIZE]));
 }
 
 void init_sched()
@@ -120,6 +121,7 @@ void inner_task_switch(union task_union*t)
 {
     tss.esp0 = (int)&(t->stack[KERNEL_STACK_SIZE]);
     set_cr3(t->task.dir_pages_baseAddr);
+    setMSR(0x175, 0, (unsigned long)&(t->stack[KERNEL_STACK_SIZE]));
     asm_inner_task_switch(&(current()->kernel_esp), t->task.kernel_esp);
 }
 
@@ -157,18 +159,17 @@ void sched_next_rr()
     }
     ts->state = ST_RUN;
     currentQuantum = get_quantum(ts);
+    update_stats(ts, READY2RUN);
     task_switch((union task_union *)ts);
-    update_stats(ts, READY2RUN); 
-
 }
 
 void schedule()
 {
     update_sched_data_rr();
     if (needs_sched_rr()) {
-	update_stats(current(), RUN2READY);
-	update_process_state_rr(current(), &readyqueue);
-	sched_next_rr();
+        update_stats(current(), RUN2READY);
+        update_process_state_rr(current(), &readyqueue);
+        sched_next_rr();
     }
 }
 

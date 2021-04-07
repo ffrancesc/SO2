@@ -34,6 +34,7 @@ char char_map[] =
 void system_call_handler(void);
 void keyboard_handler(void);
 void clock_handler(void);
+void setMSR(unsigned long msr, unsigned long a, unsigned long b);
 
 void setInterruptHandler(int vector, void (*handler)(), int maxAccessibleFromPL)
 {
@@ -92,6 +93,10 @@ void setIdt()
   setTrapHandler(0x80, system_call_handler, 3);
   setInterruptHandler(33, keyboard_handler, 0);
   setInterruptHandler(32, clock_handler, 0);
+
+  setMSR(0x174, 0, __KERNEL_CS);
+  setMSR(0x175, 0, INITIAL_ESP);
+  setMSR(0x176, 0, (unsigned long)system_call_handler);
 
   set_idt_reg(&idtR);
 }

@@ -26,12 +26,5 @@ int __attribute__ ((__section__(".text.main")))
   write(1, greet, strlen(greet));
   
   int pid = fork();
-  write(1, "Fork\n", 5);
-  if (pid == 0) {
-    write(1, "Child saying hello!\n", 20);
-    exit();
-  } else {
-    write(1, "Paren saying hello!\n", 20);
-  }
   while(1) {}
 }

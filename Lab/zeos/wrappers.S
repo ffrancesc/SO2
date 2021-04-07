@@ -58,7 +58,7 @@ ENTRY(exit)
 	pushl %ebp
 	movl %esp, %ebp
 	movl $1, %eax
-	call syscall_sysenter
+	int $0x80
 	popl %ebp
 	ret
 

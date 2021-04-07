@@ -129,3 +129,17 @@ ENTRY(asm_inner_task_switch)
 	mov 8(%esp), %esp
 	popl %ebp
 	ret
+
+ENTRY(get_ebp)
+	mov %ebp, %eax
+	ret
+
+ENTRY(setMSR)
+	push %ebp
+	movl %esp, %ebp
+	movl 0x10(%ebp), %eax
+	movl 0xc(%ebp), %edx
+	movl 0x8(%esp), %ecx
+	wrmsr
+	pop %ebp
+	ret
