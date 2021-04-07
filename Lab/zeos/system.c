@@ -74,7 +74,6 @@ int __attribute__((__section__(".text.main")))
 
   printk("Kernel Loaded!    ");
 
-
   /* Initialize hardware data */
   setGdt(); /* Definicio de la taula de segments de memoria */
   setIdt(); /* Definicio del vector de interrupcions */
@@ -106,9 +105,8 @@ int __attribute__((__section__(".text.main")))
   copy_data((void *) KERNEL_START + *p_sys_size, usr_main, *p_usr_size);
 
   printk("Entering user mode...\n\n");
-  set_style(10, 4, 1);
+  set_style(10, 4, 0);
   zeos_ticks = 0;
-
   enable_int();
   /*
    * We return from a 'theorical' call to a 'call gate' to reduce our privileges

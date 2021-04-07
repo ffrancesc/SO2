@@ -13,7 +13,7 @@ int add(int par1, int par2) {
 
 int addAsm(int, int);
 
-static char* greet = "User here saying hello!!";
+static char* greet = "User here saying hello!\n";
 
 int __attribute__ ((__section__(".text.main")))
   main(void)
@@ -24,6 +24,14 @@ int __attribute__ ((__section__(".text.main")))
   //~ int result = add(0x42, 0x666);
   //~ int res = addAsm(32, 32);
   write(1, greet, strlen(greet));
-  while(1) {
+  
+  int pid = fork();
+  write(1, "Fork\n", 5);
+  if (pid == 0) {
+    write(1, "Child saying hello!\n", 20);
+    exit();
+  } else {
+    write(1, "Paren saying hello!\n", 20);
   }
+  while(1) {}
 }

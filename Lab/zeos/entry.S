@@ -133,7 +133,3 @@ ENTRY(asm_inner_task_switch)
     movl 4(%ebx), %esp
     popl %ebp
     ret
-
-ENTRY(ret_from_fork)
-    RESTORE_ALL
-    iret

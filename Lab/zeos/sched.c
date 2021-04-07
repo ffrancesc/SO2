@@ -170,6 +170,7 @@ void set_quantum(struct task_struct *t, int new_quantum)
 }
 
 void enter_system() {
+    return;
     update_stats(current(), USER2SYSTEM);
 }
 
