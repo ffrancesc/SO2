@@ -63,10 +63,30 @@ ENTRY(exit)
 	int $0x80
 	cmpl $0, %eax
 	jg returnexit
+	negl %eax
 	leal errno, %ebx
 	movl %eax, (%ebx)
 	movl $-1, %eax
 returnexit:
+	pop %ebx
+	pop %ebp
+	ret
+
+ENTRY(get_stats)
+	push %ebp
+	movl %esp, %ebp
+	push %ebx
+	movl 8(%ebp), %ebx
+	movl 12(%ebp), %ecx
+	movl $35, %eax      
+	int $0x80
+	cmpl $0, %eax 
+	jge returnget_stats             
+	negl %eax
+	leal errno, %ebx  
+	movl %eax, (%ebx)
+	movl $-1, %eax
+returnget_stats:             // No errors
 	pop %ebx
 	pop %ebp
 	ret

@@ -6,6 +6,13 @@
 #include <mm.h>
 #include <io.h>
 
+// Constants for process transitions (useful for stats)
+#define READY2RUN 1
+#define RUN2READY 2
+#define USER2SYSTEM 3
+#define SYSTEM2USER 4
+
+void update_stats(struct task_struct *ts, int transition);
 void asm_inner_task_switch(union task_union * t);
 
 union task_union task[NR_TASKS]
@@ -130,14 +137,19 @@ void sched_next_rr()
     list_del(e);
     union task_union *tu = (union task_union *) ts;
     currentQuantum = get_quantum(ts);
+
+    update_stats(ts, READY2RUN); 
     task_switch(tu);
 }
 
 void schedule()
 {
     update_sched_data_rr();
-    if (needs_sched_rr() == 1) {
-        if (current()->PID != 0) update_process_state_rr(current(), &readyqueue);
+    if (needs_sched_rr()) {
+        if (current()->PID != 0) {
+            update_stats(current(), RUN2READY);
+            update_process_state_rr(current(), &readyqueue);
+        }
         sched_next_rr();
     }
     else if (currentQuantum == 0 && current()->PID != 0) { // context switch to idle process
@@ -156,3 +168,32 @@ void set_quantum(struct task_struct *t, int new_quantum)
 {
     t->quantum = new_quantum;
 }
+
+void enter_system() {
+    update_stats(current(), USER2SYSTEM);
+}
+
+void leave_system() {
+    update_stats(current(), SYSTEM2USER);
+}
+
+void update_stats(struct task_struct *ts, int transition) {
+    struct stats *st = &ts->stats;
+    int current_ticks = get_ticks();
+    int delta = current_ticks - st->elapsed_total_ticks;
+    st->elapsed_total_ticks = current_ticks;
+    switch (transition) {
+        case READY2RUN:
+            st->ready_ticks += delta;
+            st->total_trans++;
+            break;
+        case SYSTEM2USER:
+        case RUN2READY:
+            st->system_ticks += delta;
+            break;
+        case USER2SYSTEM:
+            st->user_ticks += delta;
+            break;
+    }
+}
+

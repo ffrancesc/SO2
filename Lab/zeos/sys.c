@@ -78,3 +78,14 @@ int sys_gettime() {
     return zeos_ticks;
 }
 
+int sys_get_stats(int pid, struct stats *st) {
+    if (!access_ok(VERIFY_WRITE, st, sizeof(struct stats))) return -EFAULT;
+    for (int i = 0; i < NR_TASKS; ++i) {
+        struct task_struct *ts = &task[i].task;
+        if (ts->PID == pid) {
+            ts->stats.remaining_ticks = currentQuantum;
+            return copy_to_user(&ts->stats, st, sizeof(struct stats));
+        }
+    }
+    return -ESRCH;
+}

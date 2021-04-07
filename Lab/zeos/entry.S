@@ -71,14 +71,18 @@
 ENTRY(keyboard_handler)
 	SAVE_ALL
 	EOI
+    call enter_system;
 	call keyboard_routine
+    call leave_system;
 	RESTORE_ALL
 	iret
 
 ENTRY(clock_handler)
 	SAVE_ALL
 	EOI
+    call enter_system;
 	call clock_routine
+    call leave_system;
 	RESTORE_ALL
 	iret
 
@@ -89,7 +93,9 @@ ENTRY(system_call_handler)
 	jl error;                        // If it is, jump to return an error
 	cmpl $MAX_SYSCALL, %eax;         // Is syscall greater than MAX_SYSCALL (4)?
 	jg error;                        // If it is, jump to return an error
+    call enter_system;
 	call *sys_call_table(,%eax,4);   // Call the corresponding service routine
+    call leave_system;
 	jmp fin;                         // Finish
 error:
 	movl $-38, %eax;                 // Move to EAX the ENOSYS error
@@ -127,3 +133,7 @@ ENTRY(asm_inner_task_switch)
     movl 4(%ebx), %esp
     popl %ebp
     ret
+
+ENTRY(ret_from_fork)
+    RESTORE_ALL
+    iret
