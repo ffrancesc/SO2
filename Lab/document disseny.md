@@ -70,11 +70,11 @@ Añadir los wrappers para `createScreen`, `setFocus` y `removeScreen`, que se ll
 * Añadir la rutina `sys_createScreen()`, que se encargará de crear una pantalla, es decir, obtener un canal para que el proceso pueda escribir en él.
 * Añadir la rutina `sys_setFocus(int canal)`, que cambiará el foto actual, es decir, modificará la estructura screenFocus para que apunte al canal pasado por parámetro.
 * Añadir la rutina `switchScreen()`, que será llamada después de un `'CTRL + TAB'`, y llamará a `setFocus()` con el canal obtenido con la estructura `all_screens`.
-* Añadir la rutina `sys_removeScreen(int canal)` que se encargará 
-Además, se tendrá que modificar la llamada al sistema `fork` para asegurar que:
+* Añadir la rutina `sys_removeScreen(int canal)` que se encargará de comprobar si el canal existe y en este caso borrarlo.
 
-* Las pantallas se heredan del proceso padre al proceso hijo.
-* Se implementa la mejora de eficiencia *Copy-on-Write* propuesta en el enunciado.
+* Además, se tendrá que modificar la llamada al sistema `fork` para asegurar que:
+  * Las pantallas se heredan del proceso padre al proceso hijo.
+  * Se implementa la mejora de eficiencia *Copy-on-Write* propuesta en el enunciado.
 
 ### `io.c`
 
