@@ -94,41 +94,46 @@ Cada juego de prueba consistirá en una función de signatura `int test_id(void)
   * **comprobación**: la llamada devuelve `0`. Además aparece el texto escrito.
 
 * `test_2`
-  * **objetivo**: probar la creación de pantallas varias pantallas para un proceso.
-  * **descripción**: se llama a `createScreen` dos veces. Se escribe `'Hola!'` en el segundo canal y se llama a `setFocus` para mostrar la segunda pantalla.
-  * **comprobación**: las llamada devuelven `0`. Además aparece el texto escrito.
-
-* `test_3`
   * **objetivo**: control de errores para canales inexistentes en un proceso.
   * **descripción**: se llama a `createScreen` una vez. Se escribe `'Hola!'` en **otro canal**.
   * **comprobación**: las llamada `write` devuelve un error y nada aparece escrito.
 
+* `test_3`
+  * **objetivo**: probar la creación de pantallas varias pantallas para un proceso.
+  * **descripción**: se llama a `createScreen` dos veces. Se escribe `'Hola!'` en el segundo canal y se llama a `setFocus` para mostrar la segunda pantalla.
+  * **comprobación**: las llamada devuelven `0`. Además aparece el texto escrito.
+
 * `test_4`
+  * **objetivo**: control de errores al cambiar a canales inexistentes en un proceso.
+  * **descripción**: se llama a `createScreen` una vez. Se escribe `'Hola!'` en el primer canal y se llama a `setFocus` para mostrar la segunda pantalla (inexistente).
+  * **comprobación**: las llamada `setFocus` devuelve un error y `'Hola!'`.
+
+* `test_5`
   * **objetivo**: probar la correcta detección de la combinación de teclas `'CTRL+TAB'`.
   * **descripción**: se llama a `createScreen`dos veces. Se escribe `'Hola!'` en el segundo canal y se pausa la ejecución a la espera de que el usuario introduzca `'CTRL+TAB'`.
   * **comprobación**: las llamada devuelven `0`. Además aparece el texto escrito.
 
-* `test_5`
+* `test_6`
   * **objetivo**: probar la destrucción de pantallas existentes para un proceso.
   * **descripción**: se llama a `createScreen` una vez. Se escribe `'Hola!'`, se duerme el proceso un tiempo razonable y se llama a `removeScreen`.
   * **comprobación**: las llamada devuelven `0`. Inicialmente aparece `'Hola!'`, pero éste desaparece despues de la destrucción de la pantalla.
 
-* `test_6`
-  * **objetivo**: control de errores al destruir canales inexistentes en un proceso.
+* `test_7`
+  * **objetivo**: control de errores al destruir canales inexistentes en un proceso. 
   * **descripción**: se llama a `createScreen` una vez y se llama a `removeScreen` especificando **otro** canal.
   * **comprobación**: la llamada `removeScreen` devuelve un error.
 
-* `test_7`
+* `test_8`
   * **objetivo**: herencia de pantallas entre procesos
   * **descripción**: se llama a `createScreen` una vez, se escribe `'Hola, '` y se llama a `fork`. El hijo escribe `'mundo!'`.
   * **comprobación**: las llamada devuelven `0`. Además aparece el texto escrito.
 
-* `test_8`
+* `test_9`
   * **objetivo**: control de errores al destruir pantallas heredadas.
   * **descripción**: se llama a `createScreen` una vez, se escribe `'Hola!'` y se llama a `fork`. El hijo llama a `removeScreen`.
   * **comprobación**: Aparece el texto escrito y la llamada `removeScreen` devuelve un error.
 
-* `test_9`
+* `test_10`
   * **objetivo**: multiples pantallas entre procesos
   * **descripción**: se llama a `createScreen` una vez, se escribe `'Hola!'` y se llama a `fork` **dos veces**. Cada hijo llama a `createScreen` y escribe `'Aloh'` en su canal. Se introduce `'CTRL+TAB'` tres veces para comprobar cada pantalla.  
   * **comprobación**: Se visualizan las tres pantallas, cada una con su correspondiente mensaje.
@@ -145,24 +150,44 @@ Cada juego de prueba consistirá en una función de signatura `int test_id(void)
 
 A continuación se detalla el esquema de desarrollo a seguir, clarificando cada ítem y relacionándolo con su correspondiente set de pruebas descrito en la sección anterior.
 
-### Nivel 1
+### Creación de pantallas para un único proceso
 
 1. Modificar las estructuras de datos requeridas
     1. Modificar `task_struct` para añadir los atributos `screen_count` y  `*process_screens`.
-2. Crear la estructura `screen`, y la enumeración `pressed_key`.
-    1. Añadir la lista `*all_screens*`
-    2. Añadir el atibuto `screen`
+2. Crear estructuras de datos requeridas
+    1. Definir la estructura `screen` y la enumeración `pressed_key`.
+    2. Añadir la lista `*all_screens*`.
+3. Implementar la llamada `createScreen()`.
+    1. Añadir la rutina `sys_createScreen()`.
+    2. Añadir el wrapper `createScreen()`.
+4. Modificar la llamada `write` para que acepte el canal como parámetro.
+5. Implementar los tests `test_1` y `test_2` y comprobar que funcionen.
 
-TODO: 
+### Cambios de pantalla para un único proceso
 
-### Nivel 2
+6. Implementar la llamada `setFocus`.
+    1. Añadir la rutina `sys_setFocus()`.
+    2. Añadir el wrapper `setFocus()`.
+7. Implementar el test `test_3` y comprobar que funciona.
+8. Implementar la llada `switchScreen()`
+    1. Añadir el wrapper `switchScreen()` para que internamente llame a `sys_setFocus()` con el canal apropiado.
+8. Implementar la detección de la combinación de teclas `'CTRL + TAB'`.
+    1. Modificar `keyboard_routine()` para añadir la lógica de la detección.
+    2. Actualizar el atributo `pressed_key`.
+9. Implementar el test `test_5` y comprobar que funciona.
 
-TODO: 
+### Destrucción de pantallas para un único proceso
 
-3. Destrucción de pantallas para un único proceso
-4. Herencia de pantallas entre procesos.
+10. Implementar la llamada `removeScreen`.
+    1. Añadir la rutina `sys_removeScreen()`.
+    2. Añadir el wrapper `removeScreen()`.
+11. Implementar los tests `test_6` y `test_7`  y comprobar que funcionan.
 
-### Nivel 3
-TODO:
+### Herencia de pantallas entre procesos
 
-5. Mejora general de rendimiento *Copy-on-Write*
+12. Modificar la llamada a sistema `fork` para implementar la herencia de pantallas.
+13. Implementar los tests `test_8`, `test_9` y `test_10`  y comprobar que funcionan.
+
+### Mejora general de rendimiento *Copy-on-Write*
+
+14. Implementar la mejora *Coy-on-Write* en la llamada a sistema *fork*.
