@@ -26,12 +26,12 @@ SYSLDFLAGS = -T system.lds
 USRLDFLAGS = -T user.lds
 LINKFLAGS = -g
 
-SYSOBJ = interrupt.o entry.o sys_call_table.o io.o sched.o sys.o mm.o devices.o utils.o hardware.o list.o p_stats.o kernel-utils.o
+SYSOBJ = interrupt.o entry_out.o sys_call_table_out.o io.o sched.o sys.o mm.o devices.o utils.o hardware.o list.o p_stats.o kernel-utils_out.o
 
 LIBZEOS = -L . -l zeos -l auxjp
 
 #add to USROBJ the object files required to complete the user program
-USROBJ = libc.o user-utils.o # libjp.a
+USROBJ = libc.o user-utils_out.o # libjp.a
 
 all:zeos.bin
 
@@ -46,22 +46,22 @@ build: build.c
 bootsect: bootsect.o
 	$(LD86) -s -o $@ $<
 
-bootsect.o: bootsect.s
+bootsect.o: bootsect_out.s
 	$(AS86) -o $@ $<
 
-bootsect.s: bootsect.S Makefile
+bootsect_out.s: bootsect.S Makefile
 	$(CPP) $(ASMFLAGS) -traditional $< -o $@
 
-entry.s: entry.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
+entry_out.s: entry.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
-user-utils.s: user-utils.S $(INCLUDEDIR)/asm.h
+user-utils_out.s: user-utils.S $(INCLUDEDIR)/asm.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
-kernel-utils.s: kernel-utils.S $(INCLUDEDIR)/asm.h
+kernel-utils_out.s: kernel-utils.S $(INCLUDEDIR)/asm.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
-sys_call_table.s: sys_call_table.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
+sys_call_table_out.s: sys_call_table.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
 user.o:user.c $(INCLUDEDIR)/libc.h
@@ -93,7 +93,7 @@ user: user.o user.lds $(USROBJ)
 
 
 clean:
-	rm -f *.o *.s bochsout.txt parport.out system.out system bootsect zeos.bin user user.out *~ build 
+	rm -f *.o *_out.s bochsout.txt parport.out system.out system bootsect zeos.bin user user.out *~ build 
 
 disk: zeos.bin
 	dd if=zeos.bin of=/dev/fd0
