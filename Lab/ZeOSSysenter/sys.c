@@ -236,3 +236,14 @@ int sys_get_stats(int pid, struct stats *st)
   }
   return -ESRCH; /*ESRCH */
 }
+
+
+int sys_create_screen()
+{
+  return 0;
+}
+
+int sys_set_focus(int canal)
+{
+  return 0;
+}

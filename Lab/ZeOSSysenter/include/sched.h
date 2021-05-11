@@ -26,7 +26,7 @@ struct task_struct {
   struct stats p_stats;		/* Process stats */
 
   int screen_count; /* total de pantallas que tiene el proceso */
-  struct screen *process_screens; /* lista de pantallas que tiene el proceso */
+  struct screen *p_screens; /* lista de pantallas que tiene el proceso */
 };
 
 struct screen {
@@ -64,6 +64,8 @@ void init_task1(void);
 void init_idle(void);
 
 void init_sched(void);
+
+void init_screens(void);
 
 void schedule(void);
 
