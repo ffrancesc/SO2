@@ -12,8 +12,11 @@
 extern Gate idt[IDT_ENTRIES];
 extern Register idtR;
 
+enum modifier_key { NONE, CTRL, TAB };
+
 void setInterruptHandler(int vector, void (*handler)(), int maxAccessibleFromPL);
 void setTrapHandler(int vector, void (*handler)(), int maxAccessibleFromPL);
+enum modifier_key getPressedModifierKey();
 
 void setIdt();
 

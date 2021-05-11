@@ -17,11 +17,11 @@ Register    idtR;
 char char_map[] =
 {
   '\0','\0','1','2','3','4','5','6',
-  '7','8','9','0','\'','¡','\0','\0',
+  '7','8','9','0','\'','ï¿½','\0','\0',
   'q','w','e','r','t','y','u','i',
   'o','p','`','+','\0','\0','a','s',
-  'd','f','g','h','j','k','l','ñ',
-  '\0','º','\0','ç','z','x','c','v',
+  'd','f','g','h','j','k','l','ï¿½',
+  '\0','ï¿½','\0','ï¿½','z','x','c','v',
   'b','n','m',',','.','-','\0','*',
   '\0','\0','\0','\0','\0','\0','\0','\0',
   '\0','\0','\0','\0','\0','\0','\0','7',
@@ -32,6 +32,8 @@ char char_map[] =
 };
 
 int zeos_ticks = 0;
+
+enum modifier_key pressed_modifier_key;
 
 void clock_routine()
 {
@@ -90,6 +92,10 @@ void setTrapHandler(int vector, void (*handler)(), int maxAccessibleFromPL)
   idt[vector].segmentSelector = __KERNEL_CS;
   idt[vector].flags           = flags;
   idt[vector].highOffset      = highWord((DWord)handler);
+}
+
+enum modifier_key getPressedModifierKey() {
+  return pressed_modifier_key;
 }
 
 void clock_handler();

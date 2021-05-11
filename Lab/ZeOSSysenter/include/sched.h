@@ -24,7 +24,19 @@ struct task_struct {
   enum state_t state;		/* State of the process */
   int total_quantum;		/* Total quantum of the process */
   struct stats p_stats;		/* Process stats */
+
+  int screen_count; /* total de pantallas que tiene el proceso */
+  struct screen *process_screens; /* lista de pantallas que tiene el proceso */
 };
+
+struct screen {
+  int screen_id; /* id de la pantalla */
+  int PID; /* pid del proceso que ha creado la pantalla */
+  int channel; /* canal en el que la pantalla escribe */
+  Byte x; /* posición x del próximo carácter a escribir */
+  Byte y; /* posición y del próximo carácter a escribir */
+};
+
 
 union task_union {
   struct task_struct task;
@@ -39,6 +51,9 @@ extern struct task_struct *idle_task;
 #define KERNEL_ESP(t)       	(DWord) &(t)->stack[KERNEL_STACK_SIZE]
 
 #define INITIAL_ESP       	KERNEL_ESP(&task[1])
+
+struct screen *all_screens; /* lista de todas las pantallas creadas por el sistema operativo */
+struct screen *screen_focus; /* pantalla que tiene el foco */
 
 extern struct list_head freequeue;
 extern struct list_head readyqueue;
