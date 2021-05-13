@@ -10,10 +10,10 @@
 /** Screen  ***/
 /**************/
 
-#define NUM_COLUMNS 80
-#define NUM_ROWS    25
 
 Byte x, y=19;
+backgroundColor = 0x0;
+textColor = 0x2;
 
 /* Read a byte from 'port' */
 Byte inb (unsigned short port)
@@ -34,7 +34,7 @@ void printc(char c)
   }
   else
   {
-    Word ch = (Word) (c & 0x00FF) | 0x0200;
+    Word ch = (Word) ((c & 0x00FF) | (backgroundColor << 12) | (textColor << 8));
     DWord screen = 0xb8000 + (y * NUM_COLUMNS + x) * 2;
     if (++x >= NUM_COLUMNS)
     {
@@ -62,4 +62,16 @@ void printk(char *string)
   int i;
   for (i = 0; string[i]; i++)
     printc(string[i]);
+}
+
+void setBackgroundColor(int c)
+{
+  backgroundColor = c;
+  //print againt
+}
+
+void setTextColor(int c)
+{
+  textColor = c;
+  //print again
 }

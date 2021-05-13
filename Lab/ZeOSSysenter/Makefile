@@ -103,7 +103,6 @@ emul: zeos.bin
 
 gdb: zeos.bin
 	bochs -q -f .bochsrc_gdb &
-	./generate_gdbcmd_file.sh
 	gdb -x .gdbcmd system
 
 emuldbg: zeos.bin

@@ -26,7 +26,7 @@ struct task_struct {
   struct stats p_stats;		/* Process stats */
 
   int screen_count; /* total de pantallas que tiene el proceso */
-  struct screen *p_screens; /* lista de pantallas que tiene el proceso */
+  struct list_head p_screens; /* lista de pantallas que tiene el proceso */
 };
 
 struct screen {
@@ -52,7 +52,7 @@ extern struct task_struct *idle_task;
 
 #define INITIAL_ESP       	KERNEL_ESP(&task[1])
 
-struct screen *all_screens; /* lista de todas las pantallas creadas por el sistema operativo */
+struct list_head all_screens; /* lista de todas las pantallas creadas por el sistema operativo */
 struct screen *screen_focus; /* pantalla que tiene el foco */
 
 extern struct list_head freequeue;
@@ -93,5 +93,9 @@ int needs_sched_rr();
 void update_sched_data_rr();
 
 void init_stats(struct stats *s);
+
+void switchScreen(void);
+void moveCursor(char dir);
+void deleteChar(void);
 
 #endif  /* __SCHED_H__ */

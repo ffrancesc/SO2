@@ -276,3 +276,22 @@ void init_screens()
 void init_process_screens(struct screen *s) {
 
 }
+
+void switchScreen()
+{
+//   struct screen *next_screen = list_entry(, struct screen, screen_focus->head_anchor->next);
+//   sys_set_focus(screen_focus->channel);
+}
+
+void moveCursor(char dir)
+{
+  if (dir == 'U' && screen_focus->y > 0) --screen_focus->y;
+  else if (dir == 'R' && screen_focus->x < NUM_COLUMNS) ++screen_focus->x;
+  else if (dir == 'L' && screen_focus->x > 0) --screen_focus->x; 
+  else if (screen_focus->y < NUM_ROWS) ++screen_focus->y;
+}
+
+void deleteChar()
+{
+  
+}
