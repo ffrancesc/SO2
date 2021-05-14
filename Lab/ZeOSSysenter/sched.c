@@ -199,7 +199,13 @@ void init_task1(void)
   
   init_stats(&c->p_stats);
 
-  INIT_LIST_HEAD(&c->p_screens);
+  // Init screens
+  int i = 0;
+  for (i = 0; i < NR_SCREENS_PER_PROCESS; ++i) {
+    c->used_screens[i] = 0;
+  }
+  int fd = sys_create_screen();
+  screen_focus = &c->p_screens[fd];
 
   allocate_DIR(c);
 

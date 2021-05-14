@@ -265,12 +265,21 @@ int sys_create_screen()
       for (j = 0; j < NUM_ROWS*NUM_COLUMNS; ++j)
       {
         screen.buffer[j] = ' ';
-        screen.x = 0;
-        screen.y = 2; 
-        // We leave to lines blank which will contain the screen info.
-        char* pid_m = "PID: ";
-        copy_data(pid_m, screen.buffer, 5);
       }
+      screen.x = 0;
+      screen.y = 2; 
+      // We leave to lines blank which will contain the screen info.
+      char* pid_m = "PID: ";
+      char pid_num[2];
+      itoa(curr->PID, pid_num);
+      char* fd_m = "Channel: ";
+      char fd_num[2];
+      itoa(i, fd_num);
+      copy_data(pid_m, screen.buffer, 5);
+      copy_data(pid_num, screen.buffer + 5, 2);
+      copy_data(fd_m, screen.buffer + 12, 9);
+      copy_data(fd_num, screen.buffer + 21, 2);
+      return i;
     }
   }
   return -100; // NO AVAILABLE SCREEN
