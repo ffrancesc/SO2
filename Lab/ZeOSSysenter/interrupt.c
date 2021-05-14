@@ -6,6 +6,7 @@
 #include <segment.h>
 #include <hardware.h>
 #include <io.h>
+#include <devices.h>
 
 #include <sched.h>
 
@@ -14,26 +15,26 @@
 Gate idt[IDT_ENTRIES];
 Register    idtR;
 
-char char_map[] =
-{
-  '\0','\0','1','2','3','4','5','6',
-  '7','8','9','0','\'','�','\0','\0',
-  'q','w','e','r','t','y','u','i',
-  'o','p','`','+','\0','\0','a','s',
-  'd','f','g','h','j','k','l','�',
-  '\0','�','\0','�','z','x','c','v',
-  'b','n','m',',','.','-','\0','*',
-  '\0','\0','\0','\0','\0','\0','\0','\0',
-  '\0','\0','\0','\0','\0','\0','\0','7',
-  '8','9','-','4','5','6','+','1',
-  '2','3','0','\0','\0','\0','<','\0',
-  '\0','\0','\0','\0','\0','\0','\0','\0',
-  '\0','\0'
-};
+char char_map[] = 
+{ 
+  '\0','\0','1','2','3','4','5','6', 
+  '7','8','9','0','\'','¡','B','T', 
+  'q','w','e','r','t','y','u','i', 
+  'o','p','`','+','\0','\0','a','s', 
+  'd','f','g','h','j','k','l','ñ', 
+  '\0','º','S','ç','z','x','c','v', 
+  'b','n','m',',','.','-','\0','*', 
+  '\0','\0','\0','\0','\0','\0','\0','\0', 
+  '\0','\0','\0','\0','\0','\0','\0','7', 
+  'U','9','-','L','5','R','+','1', 
+  'D','3','0','\0','\0','\0','<','\0', 
+  '\0','\0','\0','\0','\0','\0','\0','\0', 
+  '\0','\0' 
+}; 
 
 int zeos_ticks = 0;
 
-enum modifier_key pressed_modifier_key;
+enum modifier_key pressed_modifier_key = NONE; 
 
 void clock_routine()
 {
@@ -47,7 +48,58 @@ void keyboard_routine()
 {
   unsigned char c = inb(0x60);
   
-  if (c&0x80) printc_xy(0, 0, char_map[c&0x7f]);
+  char input = char_map[c&0x7f]; 
+ 
+  if (input == 'S') 
+    pressed_modifier_key = SHIFT; 
+ 
+  else if (pressed_modifier_key == SHIFT) { 
+    pressed_modifier_key = NONE; 
+ 
+    if (input == 'T') 
+      switchScreen(); 
+    else if (input == '1') 
+      setBackgroundColor(0x0); 
+    else if (input == '2') 
+      setBackgroundColor(0x1); 
+    else if (input == '3') 
+      setBackgroundColor(0x2); 
+    else if (input == '4') 
+      setBackgroundColor(0x3); 
+    else if (input == '5') 
+      setBackgroundColor(0x4); 
+  } 
+ 
+  else if (input == 'T') 
+    pressed_modifier_key = TAB; 
+ 
+  else if (pressed_modifier_key == TAB) { 
+    pressed_modifier_key = NONE; 
+ 
+    if (input == '1') 
+      setTextColor(0x1); 
+    else if (input == '2') 
+      setTextColor(0x2); 
+    else if (input == '3') 
+      setTextColor(0x3); 
+    else if (input == '4') 
+      setTextColor(0x4); 
+    else if (input == '5') 
+      setTextColor(0x5); 
+  } 
+ 
+  else if (input == 'U' || input == 'L' || input == 'D' || input == 'R') 
+    moveCursor(input); 
+ 
+  else if (input == 'B') 
+    deleteChar(); 
+ 
+  else if (c&0x80) { 
+    pressed_modifier_key = NONE; 
+    printc_xy(0, 21, input); 
+  } 
+ 
+  else pressed_modifier_key = NONE; 
 }
 
 void setInterruptHandler(int vector, void (*handler)(), int maxAccessibleFromPL)

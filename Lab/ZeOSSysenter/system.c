@@ -83,7 +83,7 @@ int __attribute__((__section__(".text.main")))
   /* Initialize Memory */
   init_mm();
 
-/* Initialize an address space to be used for the monoprocess version of ZeOS */
+  /* Initialize an address space to be used for the monoprocess version of ZeOS */
 
   //monoprocess_init_addr_space(); /* TO BE DELETED WHEN ADDED THE PROCESS MANAGEMENT CODE TO BECOME MULTIPROCESS */
 
@@ -94,8 +94,6 @@ int __attribute__((__section__(".text.main")))
   init_idle();
   /* Initialize task 1 data */
   init_task1();
-
-  init_screens();
 
   /* Move user code/data now (after the page table initialization) */
   copy_data((void *) KERNEL_START + *p_sys_size, usr_main, *p_usr_size);

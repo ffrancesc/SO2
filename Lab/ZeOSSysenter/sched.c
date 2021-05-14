@@ -199,8 +199,7 @@ void init_task1(void)
   
   init_stats(&c->p_stats);
 
-  c->screen_count=0;
-  init_process_screens(c->p_screens);
+  INIT_LIST_HEAD(&c->p_screens);
 
   allocate_DIR(c);
 
@@ -266,13 +265,4 @@ void force_task_switch()
   update_process_state_rr(current(), &readyqueue);
 
   sched_next_rr();
-}
-
-
-void init_screens()
-{
-
-}
-void init_process_screens(struct screen *s) {
-
 }

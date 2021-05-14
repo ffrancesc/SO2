@@ -24,8 +24,9 @@ void * get_ebp();
 
 int check_fd(int fd, int permissions)
 {
-  if (fd!=1) return -EBADF; 
-  if (permissions!=ESCRIPTURA) return -EACCES; 
+  // TODO! Check
+  //if (fd!=1) return -EBADF; 
+  //if (permissions!=ESCRIPTURA) return -EACCES; 
   return 0;
 }
 
@@ -153,9 +154,11 @@ int sys_fork(void)
 #define TAM_BUFFER 512
 
 int sys_write(int fd, char *buffer, int nbytes) {
-char localbuffer [TAM_BUFFER];
-int bytes_left;
-int ret;
+  char localbuffer [TAM_BUFFER];
+  int bytes_left;
+  int ret;
+
+  struct screen_struct *screen = &current()->p_screens[fd];
 
 	if ((ret = check_fd(fd, ESCRIPTURA)))
 		return ret;
@@ -167,16 +170,26 @@ int ret;
 	bytes_left = nbytes;
 	while (bytes_left > TAM_BUFFER) {
 		copy_from_user(buffer, localbuffer, TAM_BUFFER);
-		ret = sys_write_console(localbuffer, TAM_BUFFER);
+		ret = sys_write_screen(screen, localbuffer, TAM_BUFFER);
 		bytes_left-=ret;
 		buffer+=ret;
 	}
 	if (bytes_left > 0) {
 		copy_from_user(buffer, localbuffer,bytes_left);
-		ret = sys_write_console(localbuffer, bytes_left);
+		ret = sys_write_screen(screen, localbuffer, bytes_left);
 		bytes_left-=ret;
 	}
 	return (nbytes-bytes_left);
+}
+
+int sys_write_screen(struct screen_struct *screen, char* buffer, int size) 
+{
+  int offset =  screen->y*NUM_COLUMNS + screen->x;
+  copy_data(buffer, screen->buffer + offset, size);
+  screen->y = offset / NUM_COLUMNS;
+  screen->x = offset % NUM_COLUMNS;
+  refresh();
+  return 0;
 }
 
 
@@ -240,10 +253,39 @@ int sys_get_stats(int pid, struct stats *st)
 
 int sys_create_screen()
 {
+  struct task_struct* curr = current();
+  int i;
+  for(i = 0; i < NR_SCREENS_PER_PROCESS; ++i) 
+  {
+    if (!curr->used_screens[i]) {
+      // initialize screen
+      curr->used_screens[i] = 1;
+      struct screen_struct screen = curr->p_screens[i];
+      int j;
+      for (j = 0; j < NUM_ROWS*NUM_COLUMNS; ++j)
+      {
+        screen.buffer[j] = ' ';
+        screen.x = 0;
+        screen.y = 2; 
+        // We leave to lines blank which will contain the screen info.
+        char* pid_m = "PID: ";
+        copy_data(pid_m, screen.buffer, 5);
+      }
+    }
+  }
+  return -100; // NO AVAILABLE SCREEN
+
+}
+
+int sys_set_focus(int fd)
+{
+  screen_focus = &current()->p_screens[fd];
+  refresh();
   return 0;
 }
 
-int sys_set_focus(int canal)
+int sys_close(int fd)
 {
+  current()->used_screens[fd] = 0;
   return 0;
 }

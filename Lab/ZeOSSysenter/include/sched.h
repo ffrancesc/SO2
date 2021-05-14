@@ -9,6 +9,7 @@
 #include <types.h>
 #include <mm_address.h>
 #include <stats.h>
+#include <devices.h>
 
 
 #define NR_TASKS      10
@@ -25,16 +26,8 @@ struct task_struct {
   int total_quantum;		/* Total quantum of the process */
   struct stats p_stats;		/* Process stats */
 
-  int screen_count; /* total de pantallas que tiene el proceso */
-  struct screen *p_screens; /* lista de pantallas que tiene el proceso */
-};
-
-struct screen {
-  int screen_id; /* id de la pantalla */
-  int PID; /* pid del proceso que ha creado la pantalla */
-  int channel; /* canal en el que la pantalla escribe */
-  Byte x; /* posición x del próximo carácter a escribir */
-  Byte y; /* posición y del próximo carácter a escribir */
+  struct screen_struct p_screens[10]; /* lista de pantallas disponibles por el proceso */
+  int used_screens[10]; /* vector indicador de si una pantalla está activa o no */
 };
 
 
@@ -52,8 +45,7 @@ extern struct task_struct *idle_task;
 
 #define INITIAL_ESP       	KERNEL_ESP(&task[1])
 
-struct screen *all_screens; /* lista de todas las pantallas creadas por el sistema operativo */
-struct screen *screen_focus; /* pantalla que tiene el foco */
+
 
 extern struct list_head freequeue;
 extern struct list_head readyqueue;
@@ -64,8 +56,6 @@ void init_task1(void);
 void init_idle(void);
 
 void init_sched(void);
-
-void init_screens(void);
 
 void schedule(void);
 

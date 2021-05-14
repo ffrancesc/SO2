@@ -28,4 +28,12 @@ int yield();
 
 int get_stats(int pid, struct stats *st);
 
+int create_screen();
+
+int set_focus(int fd);
+
+int close(int fd);
+
+
+
 #endif  /* __LIBC_H__ */
