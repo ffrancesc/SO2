@@ -17,15 +17,13 @@ int sys_write_console(char *buffer,int size)
   return size;
 }
 
-
-
 void switchScreen() 
 { 
   struct task_struct* curr = current();
   // find current screen in vector
   int screen_i = -1, i;
   for (i = 0; i < NR_SCREENS_PER_PROCESS; ++i) {
-    if (&curr->p_screens[i] == screen_focus) {
+    if (curr->p_screens[i] == screen_focus) {
       screen_i = i;
       break;
     }

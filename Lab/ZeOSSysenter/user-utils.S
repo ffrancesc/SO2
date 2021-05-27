@@ -138,5 +138,3 @@ ENTRY(close)
 	js nok	// if (eax < 0) -->
 	popl %ebp
 	ret
-
-

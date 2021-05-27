@@ -97,8 +97,8 @@ void keyboard_routine()
   else if (c&0x80) { 
     pressed_modifier_key = NONE; 
     printc_xy(0, 21, input); 
-  } 
- 
+  }
+
   else pressed_modifier_key = NONE; 
 }
 

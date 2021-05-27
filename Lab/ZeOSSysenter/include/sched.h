@@ -26,10 +26,9 @@ struct task_struct {
   int total_quantum;		/* Total quantum of the process */
   struct stats p_stats;		/* Process stats */
 
-  struct screen_struct p_screens[10]; /* lista de pantallas disponibles por el proceso */
+  struct screen_struct *p_screens[10]; /* lista de pantallas disponibles por el proceso */
   int used_screens[10]; /* vector indicador de si una pantalla está activa o no */
 };
-
 
 union task_union {
   struct task_struct task;
@@ -44,8 +43,6 @@ extern struct task_struct *idle_task;
 #define KERNEL_ESP(t)       	(DWord) &(t)->stack[KERNEL_STACK_SIZE]
 
 #define INITIAL_ESP       	KERNEL_ESP(&task[1])
-
-
 
 extern struct list_head freequeue;
 extern struct list_head readyqueue;

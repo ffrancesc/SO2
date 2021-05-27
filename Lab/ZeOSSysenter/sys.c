@@ -158,7 +158,7 @@ int sys_write(int fd, char *buffer, int nbytes) {
   int bytes_left;
   int ret;
 
-  struct screen_struct *screen = &current()->p_screens[fd];
+  struct screen_struct *screen = current()->p_screens[fd];
 
 	if ((ret = check_fd(fd, ESCRIPTURA)))
 		return ret;
@@ -260,14 +260,14 @@ int sys_create_screen()
     if (!curr->used_screens[i]) {
       // initialize screen
       curr->used_screens[i] = 1;
-      struct screen_struct screen = curr->p_screens[i];
+      struct screen_struct screen;
       int j;
       for (j = 0; j < NUM_ROWS*NUM_COLUMNS; ++j)
       {
         screen.buffer[j] = ' ';
       }
       screen.x = 0;
-      screen.y = 2; 
+      screen.y = 2;
       // We leave to lines blank which will contain the screen info.
       char* pid_m = "PID: ";
       char pid_num[2];
@@ -279,6 +279,7 @@ int sys_create_screen()
       copy_data(pid_num, screen.buffer + 5, 2);
       copy_data(fd_m, screen.buffer + 12, 9);
       copy_data(fd_num, screen.buffer + 21, 2);
+      curr->p_screens[i] = &screen;
       return i;
     }
   }
@@ -288,7 +289,7 @@ int sys_create_screen()
 
 int sys_set_focus(int fd)
 {
-  screen_focus = &current()->p_screens[fd];
+  screen_focus = current()->p_screens[fd];
   refresh();
   return 0;
 }
