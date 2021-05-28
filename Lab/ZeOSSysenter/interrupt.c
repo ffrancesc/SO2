@@ -53,20 +53,26 @@ void keyboard_routine()
   char input = char_map[c&0x7f];
 
   // if (!(c&0x80)) return;
-  if (input == '\000') {
+  if (input == '\000' && (c&0x80)) {
     ++space_rec;
     return;
   }
  
-  if (!(c&0x80) && input == 'S') 
+  if (!(c&0x80) && input == 'S') {
     shift = 1;
-  else if ((c&0x80) && input == 'S')
+    return;
+  }
+  else if ((c&0x80) && input == 'S') {
     shift = 0;
+    return;
+  }
 
   if (!(c&0x80) && input == 'T') 
     tab = 1;
-  else if ((c&0x80) && input == 'T')
+  else if ((c&0x80) && input == 'T') {
     tab = 0;
+    return;
+  }
 
   if (shift == 1) {
     if (tab == 1)
