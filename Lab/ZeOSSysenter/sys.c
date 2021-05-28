@@ -192,8 +192,8 @@ int sys_write_screen(struct screen_struct *screen, char* buffer, int size)
   copy_data(buffer, screen->buffer + offset, size);
   screen->y = offset / NUM_COLUMNS;
   screen->x = offset % NUM_COLUMNS;
-  refresh();
-  return 0;
+  if (screen == screen_focus) refresh();
+  return size;
 }
 
 extern int zeos_ticks;
@@ -276,13 +276,13 @@ int sys_create_screen()
       screen->y = 2;
       // We leave to lines blank which will contain the screen info.
       char* pid_m = "PID: ";
-      char pid_num[2];
+      char pid_num[4];
       itoa(curr->PID, pid_num);
       char* fd_m = "Channel: ";
       char fd_num[2];
       itoa(i, fd_num);
       copy_data(pid_m, &screen->buffer[0], 5);
-      copy_data(pid_num, &screen->buffer[5], 2);
+      copy_data(pid_num, &screen->buffer[5], 4);
       copy_data(fd_m, &screen->buffer[12], 9);
       copy_data(fd_num, &screen->buffer[21], 2);
       return i;
