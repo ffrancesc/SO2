@@ -257,12 +257,11 @@ int sys_create_screen()
   int i;
   for(i = 0; i < NR_SCREENS_PER_PROCESS; ++i) 
   {
-    if (!curr->used_screens[i]) {
+    if (curr->used_screens[i] == 0) {
       // initialize screen
       curr->used_screens[i] = 1;
       struct screen_struct screen;
-      int j;
-      for (j = 0; j < NUM_ROWS*NUM_COLUMNS; ++j)
+      for (int j = 0; j < NUM_ROWS*NUM_COLUMNS; ++j)
       {
         screen.buffer[j] = ' ';
       }
@@ -275,10 +274,11 @@ int sys_create_screen()
       char* fd_m = "Channel: ";
       char fd_num[2];
       itoa(i, fd_num);
-      copy_data(pid_m, screen.buffer, 5);
-      copy_data(pid_num, screen.buffer + 5, 2);
-      copy_data(fd_m, screen.buffer + 12, 9);
-      copy_data(fd_num, screen.buffer + 21, 2);
+      copy_data(pid_m, &screen.buffer[0], 5);
+      copy_data(pid_num, &screen.buffer[5], 2);
+      copy_data(fd_m, &screen.buffer[12], 9);
+      copy_data(fd_num, &screen.buffer[21], 2);
+      screen.fd = i;
       curr->p_screens[i] = &screen;
       return i;
     }

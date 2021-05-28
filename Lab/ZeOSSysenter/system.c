@@ -74,7 +74,6 @@ int __attribute__((__section__(".text.main")))
 
   printk("Kernel Loaded!    ");
 
-
   /* Initialize hardware data */
   setGdt(); /* Definicio de la taula de segments de memoria */
   setIdt(); /* Definicio del vector de interrupcions */
@@ -95,8 +94,18 @@ int __attribute__((__section__(".text.main")))
   /* Initialize task 1 data */
   init_task1();
 
+  // for (int i = 0; i < NR_SCREENS_PER_PROCESS; ++i) {
+  //   current()->used_screens[i] = 0;
+  // }
+  // int fd = sys_create_screen();
+  // screen_focus = current()->p_screens[fd];
+  // refresh();/* Initialize task
+
   /* Move user code/data now (after the page table initialization) */
   copy_data((void *) KERNEL_START + *p_sys_size, usr_main, *p_usr_size);
+
+
+
 
 
   printk("Entering user mode...");
@@ -106,6 +115,7 @@ int __attribute__((__section__(".text.main")))
    * We return from a 'theorical' call to a 'call gate' to reduce our privileges
    * and going to execute 'magically' at 'usr_main'...
    */
+   
   return_gate(__USER_DS, __USER_DS, USER_ESP, __USER_CS, L_USER_START);
 
   /* The execution never arrives to this point */

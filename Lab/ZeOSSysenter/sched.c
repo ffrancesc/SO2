@@ -79,7 +79,7 @@ void cpu_idle(void)
 	}
 }
 
-#define DEFAULT_QUANTUM 10
+#define DEFAULT_QUANTUM 1000000
 
 int remaining_quantum=0;
 
@@ -199,13 +199,6 @@ void init_task1(void)
   
   init_stats(&c->p_stats);
 
-  // Init screens
-  for (int i = 0; i < NR_SCREENS_PER_PROCESS; ++i) {
-    c->used_screens[i] = 0;
-  }
-  int fd = sys_create_screen();
-  screen_focus = c->p_screens[fd];
-
   allocate_DIR(c);
 
   set_user_pages(c);
@@ -214,6 +207,11 @@ void init_task1(void)
   setMSR(0x175, 0, (unsigned long)&(uc->stack[KERNEL_STACK_SIZE]));
 
   set_cr3(c->dir_pages_baseAddr);
+
+  // set all screens to off
+  for (int i = 0; i < NR_SCREENS_PER_PROCESS; ++i) {
+    c->used_screens[i] = 0;
+  }
 }
 
 void init_freequeue()
