@@ -192,7 +192,6 @@ int sys_write_screen(struct screen_struct *screen, char* buffer, int size)
   return 0;
 }
 
-
 extern int zeos_ticks;
 
 int sys_gettime()
@@ -290,9 +289,10 @@ int sys_create_screen()
 
 int sys_set_focus(int fd)
 {
-  if (current()->p_screens[fd] == NULL || current()->p_screens[fd]->active != 1) return -1;
+  struct task_struct* c = current();
+  if (c->p_screens[fd] == NULL || c->p_screens[fd]->active != 1) return -1;
 
-  screen_focus = current()->p_screens[fd];
+  screen_focus = c->p_screens[fd];
   focus_screen_id = -1;
   for (int i = 0; i < last_screen_id && focus_screen_id == -1; ++i)
     if (&all_screens[i] == screen_focus)
@@ -304,6 +304,8 @@ int sys_set_focus(int fd)
 
 int sys_close(int fd)
 {
-  current()->p_screens[fd]->active = 0;
+  struct task_struct* c = current();
+  if (c->p_screens[fd] == NULL || c->p_screens[fd]->active != 1) return -1;
+  c->p_screens[fd]->active = 0;
   return 0;
 }

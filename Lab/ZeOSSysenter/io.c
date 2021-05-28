@@ -66,13 +66,13 @@ void printk(char *string)
 void setBackgroundColor(int c) 
 { 
   backgroundColor = c; 
-  //print againt 
+  refresh();
 } 
  
 void setTextColor(int c) 
 { 
-  textColor = c; 
-  //print again 
+  textColor = c;
+  refresh();
 }
 
 void set_cursor(Byte cx, Byte cy)

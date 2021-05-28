@@ -16,7 +16,6 @@ enum modifier_key { NONE, SHIFT, TAB };
 
 void setInterruptHandler(int vector, void (*handler)(), int maxAccessibleFromPL);
 void setTrapHandler(int vector, void (*handler)(), int maxAccessibleFromPL);
-enum modifier_key getPressedModifierKey();
 
 void setIdt();
 

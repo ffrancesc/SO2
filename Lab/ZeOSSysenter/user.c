@@ -11,8 +11,10 @@ int __attribute__ ((__section__(".text.main")))
 	/* __asm__ __volatile__ ("mov %0, %%cr3"::"r" (0) ); */
 	int fd = create_screen();
 	set_focus(fd);
+	write(fd, "prueba", sizeof("prueba"));
 
-	fd = create_screen();
+	int fd2 = create_screen();
+	write(fd2, "prueba1", sizeof("prueba1"));
 
   	while(1) { }
 }

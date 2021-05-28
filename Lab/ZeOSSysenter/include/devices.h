@@ -18,6 +18,7 @@ void switchScreen();
 void moveCursor(char dir); 
 void deleteChar();
 void refresh();
+void printScreen(char c);
 
 int sys_write_console(char *buffer,int size);
 

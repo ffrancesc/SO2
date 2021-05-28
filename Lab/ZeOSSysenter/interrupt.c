@@ -34,7 +34,9 @@ char char_map[] =
 
 int zeos_ticks = 0;
 
-enum modifier_key pressed_modifier_key = NONE; 
+int space_rec = 0;
+int tab = 0;
+int shift = 0;
 
 void clock_routine()
 {
@@ -48,16 +50,27 @@ void keyboard_routine()
 {
   unsigned char c = inb(0x60);
   
-  char input = char_map[c&0x7f]; 
+  char input = char_map[c&0x7f];
+
+  // if (!(c&0x80)) return;
+  if (input == '\000') {
+    ++space_rec;
+    return;
+  }
  
-  if (input == 'S') 
-    pressed_modifier_key = SHIFT; 
- 
-  else if (pressed_modifier_key == SHIFT) { 
-    pressed_modifier_key = NONE; 
- 
-    if (input == 'T') 
-      switchScreen(); 
+  if (!(c&0x80) && input == 'S') 
+    shift = 1;
+  else if ((c&0x80) && input == 'S')
+    shift = 0;
+
+  if (!(c&0x80) && input == 'T') 
+    tab = 1;
+  else if ((c&0x80) && input == 'T')
+    tab = 0;
+
+  if (shift == 1) {
+    if (tab == 1)
+      switchScreen();
     else if (input == '1') 
       setBackgroundColor(0x0); 
     else if (input == '2') 
@@ -69,13 +82,8 @@ void keyboard_routine()
     else if (input == '5') 
       setBackgroundColor(0x4); 
   }
- 
-  else if (input == 'T') 
-    pressed_modifier_key = TAB; 
- 
-  else if (pressed_modifier_key == TAB) { 
-    pressed_modifier_key = NONE; 
- 
+
+  else if (tab == 1) {
     if (input == '1') 
       setTextColor(0x1); 
     else if (input == '2') 
@@ -87,19 +95,22 @@ void keyboard_routine()
     else if (input == '5') 
       setTextColor(0x5); 
   }
- 
-  else if (input == 'U' || input == 'L' || input == 'D' || input == 'R') 
-    moveCursor(input); 
- 
-  else if (input == 'B') 
-    deleteChar(); 
- 
-  else if (c&0x80) { 
-    pressed_modifier_key = NONE; 
-    printc_xy(0, 21, input); 
-  }
 
-  else pressed_modifier_key = NONE; 
+  else if ((input == 'U' || input == 'L' || input == 'D' || input == 'R') && (c&0x80)) {
+    space_rec = 0;
+    moveCursor(input);
+  }
+ 
+  else if (input == 'B' && (c&0x80)) {
+    space_rec = 0;
+    deleteChar();
+  }
+ 
+  else if (c&0x80) {
+    for (int i = 0; i < space_rec; ++i) printScreen('\000');
+    space_rec = 0;
+    printScreen(input);
+  }
 }
 
 void setInterruptHandler(int vector, void (*handler)(), int maxAccessibleFromPL)
@@ -144,10 +155,6 @@ void setTrapHandler(int vector, void (*handler)(), int maxAccessibleFromPL)
   idt[vector].segmentSelector = __KERNEL_CS;
   idt[vector].flags           = flags;
   idt[vector].highOffset      = highWord((DWord)handler);
-}
-
-enum modifier_key getPressedModifierKey() {
-  return pressed_modifier_key;
 }
 
 void clock_handler();
