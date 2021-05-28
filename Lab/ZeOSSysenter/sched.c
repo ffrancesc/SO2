@@ -79,7 +79,7 @@ void cpu_idle(void)
 	}
 }
 
-#define DEFAULT_QUANTUM 1000000
+#define DEFAULT_QUANTUM 100
 
 int remaining_quantum=0;
 

@@ -144,6 +144,10 @@ int sys_fork(void)
   /* Set stats to 0 */
   init_stats(&(uchild->task.p_stats));
 
+  /* Set child screens to their parent's */
+  /*for (i = 0; NR_SCREENS_PER_PROCESS; ++i) {
+    uchild->task.p_screens[i] = current()->p_screens[i];
+  }
   /* Queue child process into readyqueue */
   uchild->task.state=ST_READY;
   list_add_tail(&(uchild->task.list), &readyqueue);
