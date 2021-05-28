@@ -68,7 +68,7 @@ void keyboard_routine()
       setBackgroundColor(0x3); 
     else if (input == '5') 
       setBackgroundColor(0x4); 
-  } 
+  }
  
   else if (input == 'T') 
     pressed_modifier_key = TAB; 
@@ -86,7 +86,7 @@ void keyboard_routine()
       setTextColor(0x4); 
     else if (input == '5') 
       setTextColor(0x5); 
-  } 
+  }
  
   else if (input == 'U' || input == 'L' || input == 'D' || input == 'R') 
     moveCursor(input); 

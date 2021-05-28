@@ -27,8 +27,11 @@ struct task_struct {
   struct stats p_stats;		/* Process stats */
 
   struct screen_struct *p_screens[10]; /* lista de pantallas disponibles por el proceso */
-  int used_screens[10]; /* vector indicador de si una pantalla está activa o no */
 };
+
+struct screen_struct all_screens[NR_TASKS * NR_SCREENS_PER_PROCESS];
+int last_screen_id;
+int focus_screen_id;
 
 union task_union {
   struct task_struct task;

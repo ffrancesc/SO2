@@ -21,24 +21,15 @@ int sys_write_console(char *buffer,int size)
 
 void switchScreen() 
 { 
-  struct task_struct* curr = current();
-  // // find current screen in vector
-  // int screen_i = -1, i;
-  // for (i = 0; i < NR_SCREENS_PER_PROCESS && screen_i == -1; ++i) {
-  //   if (curr->p_screens[i] == screen_focus)
-  //     screen_i = i;
-  // }
-  // // find next used screen in the vector (ciclicly)
-  // i = (screen_i+1) % NR_SCREENS_PER_PROCESS;
+  ++focus_screen_id;
+  if (focus_screen_id >= last_screen_id) focus_screen_id = 0;
+  while (focus_screen_id < last_screen_id && all_screens[focus_screen_id].active != 1)
+    ++focus_screen_id;
 
-  // while (!curr->used_screens[i])
-  //   i = (i+1) % NR_SCREENS_PER_PROCESS;
-  // sys_set_focus(i);
+  if (focus_screen_id >= last_screen_id) return -1; // all screens are inactive
 
-  if (curr->p_screens[0]->fd == screen_focus->fd)
-    sys_set_focus(1);
-  else if (curr->p_screens[1]->fd == screen_focus->fd)
-    sys_set_focus(0);
+  screen_focus = &all_screens[focus_screen_id];
+  refresh();
 }
 
 void moveCursor(char dir) 

@@ -257,16 +257,20 @@ int sys_create_screen()
   int i;
   for(i = 0; i < NR_SCREENS_PER_PROCESS; ++i) 
   {
-    if (curr->used_screens[i] == 0) {
+    if (curr->p_screens[i] == NULL || curr->p_screens[i]->active == 0) {
       // initialize screen
-      curr->used_screens[i] = 1;
-      struct screen_struct screen;
+      if (curr->p_screens[i] == NULL) {
+        curr->p_screens[i] = &all_screens[last_screen_id];
+        ++last_screen_id;
+      }
+      curr->p_screens[i]->active = 1;
+      struct screen_struct *screen = curr->p_screens[i];
       for (int j = 0; j < NUM_ROWS*NUM_COLUMNS; ++j)
       {
-        screen.buffer[j] = ' ';
+        screen->buffer[j] = ' ';
       }
-      screen.x = 0;
-      screen.y = 2;
+      screen->x = 0;
+      screen->y = 2;
       // We leave to lines blank which will contain the screen info.
       char* pid_m = "PID: ";
       char pid_num[2];
@@ -274,28 +278,32 @@ int sys_create_screen()
       char* fd_m = "Channel: ";
       char fd_num[2];
       itoa(i, fd_num);
-      copy_data(pid_m, &screen.buffer[0], 5);
-      copy_data(pid_num, &screen.buffer[5], 2);
-      copy_data(fd_m, &screen.buffer[12], 9);
-      copy_data(fd_num, &screen.buffer[21], 2);
-      screen.fd = i;
-      curr->p_screens[i] = &screen;
+      copy_data(pid_m, &screen->buffer[0], 5);
+      copy_data(pid_num, &screen->buffer[5], 2);
+      copy_data(fd_m, &screen->buffer[12], 9);
+      copy_data(fd_num, &screen->buffer[21], 2);
       return i;
     }
   }
   return -100; // NO AVAILABLE SCREEN
-
 }
 
 int sys_set_focus(int fd)
 {
+  if (current()->p_screens[fd] == NULL || current()->p_screens[fd]->active != 1) return -1;
+
   screen_focus = current()->p_screens[fd];
+  focus_screen_id = -1;
+  for (int i = 0; i < last_screen_id && focus_screen_id == -1; ++i)
+    if (&all_screens[i] == screen_focus)
+      focus_screen_id = i;
+
   refresh();
   return 0;
 }
 
 int sys_close(int fd)
 {
-  current()->used_screens[fd] = 0;
+  current()->p_screens[fd]->active = 0;
   return 0;
 }

@@ -9,7 +9,7 @@ struct screen_struct {
   char buffer[NUM_COLUMNS*NUM_ROWS];
   Byte x; /* posición x del próximo carácter a escribir */
   Byte y; /* posición y del próximo carácter a escribir */
-  int fd;
+  int active;
 };
 
 struct screen_struct *screen_focus; /* pantalla que tiene el foco */

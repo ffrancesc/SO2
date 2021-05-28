@@ -208,10 +208,9 @@ void init_task1(void)
 
   set_cr3(c->dir_pages_baseAddr);
 
-  // set all screens to off
-  for (int i = 0; i < NR_SCREENS_PER_PROCESS; ++i) {
-    c->used_screens[i] = 0;
-  }
+  // set all screens to null
+  for (int i = 0; i < NR_SCREENS_PER_PROCESS; ++i)
+    c->p_screens[i] == NULL;
 }
 
 void init_freequeue()
@@ -232,6 +231,8 @@ void init_sched()
 {
   init_freequeue();
   INIT_LIST_HEAD(&readyqueue);
+  last_screen_id = 0;
+  focus_screen_id = 0;
 }
 
 struct task_struct* current()

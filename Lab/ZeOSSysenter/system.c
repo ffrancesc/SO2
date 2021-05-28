@@ -94,19 +94,8 @@ int __attribute__((__section__(".text.main")))
   /* Initialize task 1 data */
   init_task1();
 
-  // for (int i = 0; i < NR_SCREENS_PER_PROCESS; ++i) {
-  //   current()->used_screens[i] = 0;
-  // }
-  // int fd = sys_create_screen();
-  // screen_focus = current()->p_screens[fd];
-  // refresh();/* Initialize task
-
   /* Move user code/data now (after the page table initialization) */
   copy_data((void *) KERNEL_START + *p_sys_size, usr_main, *p_usr_size);
-
-
-
-
 
   printk("Entering user mode...");
 
